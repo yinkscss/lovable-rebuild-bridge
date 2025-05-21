@@ -3,7 +3,6 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { TESTIMONIALS } from '../../lib/constants';
 import Button from '../ui/Button';
 import { formatCurrency } from '../../utils/formatters';
-import { Link } from 'react-router-dom';
 
 const HeroSection: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -41,15 +40,14 @@ const HeroSection: React.FC = () => {
           </blockquote>
           
           <div className="mb-8">
-          <Link to="/apply">
-  <Button 
-    variant="primary" 
-    size="lg" 
-    className="bg-blue-500 hover:bg-blue-600"
-  >
-    Apply Now
-  </Button>
-</Link>
+            <Button 
+              variant="primary" 
+              size="lg" 
+              className="bg-blue-500 hover:bg-blue-600"
+            >
+              Apply Now
+            </Button>
+          </div>
           
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4 border-t border-blue-800 pt-4">
             <div className="text-center md:text-left">
