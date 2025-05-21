@@ -6,12 +6,12 @@ interface SelectOption {
   label: string;
 }
 
-interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> {
+interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   options: SelectOption[];
   error?: string;
   fullWidth?: boolean;
-  onChange?: (value: string) => void;
+  onChange?: (value: string | React.ChangeEvent<HTMLSelectElement>) => void;
   placeholder?: string;
 }
 
@@ -31,7 +31,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(({
   
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (onChange) {
-      onChange(e.target.value);
+      onChange(e);
     }
   };
   

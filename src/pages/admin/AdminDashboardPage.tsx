@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card } from '../../components/ui/Card';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
