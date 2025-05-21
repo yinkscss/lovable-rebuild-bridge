@@ -54,7 +54,7 @@ const DebtCalculator: React.FC = () => {
           
           <div className="flex justify-center mt-12 space-x-6">
             <img alt="Wall Street Journal" className="h-14 object-contain" src="https://images.ctfassets.net/5xdc9rzhmhnq/5Lu8G1TwoxMc3Qu8cXSeV/c0b2d4eeeb3c79e961ef13aeb776c353/NDR-Badge-2025__1_-99-__3_.svg" />
-            <img src="https://via.placeholder.com/140x70" alt="Forbes Advisor" className="h-14 object-contain" />
+            <img alt="Forbes Advisor" className="h-14 object-contain" src="https://images.ctfassets.net/5xdc9rzhmhnq/2w76p4cNJtyPzBIB2ksKPF/aa2c8cde64b9ab878b081a8103a2f987/Wall_street_journal_logo.svg" />
             <img src="https://via.placeholder.com/140x70" alt="Bankrate" className="h-14 object-contain" />
           </div>
         </div>
