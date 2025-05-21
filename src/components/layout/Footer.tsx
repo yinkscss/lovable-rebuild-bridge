@@ -97,7 +97,7 @@ const Footer: React.FC = () => {
             <div className="grid grid-cols-2 gap-4">
               <img alt="Forbes Advisor" className="h-12 bg-white rounded p-2 object-fill" src="/lovable-uploads/92916aa2-358b-4c1e-a9ac-b389b6316169.png" />
               <img alt="Bankrate" src="https://images.ctfassets.net/5xdc9rzhmhnq/2w76p4cNJtyPzBIB2ksKPF/aa2c8cde64b9ab878b081a8103a2f987/Wall_street_journal_logo.svg" className="h-12 bg-white rounded p-2 object-fill" />
-              <img src="https://images.pexels.com/photos/3943746/pexels-photo-3943746.jpeg" alt="BBB A+ Rating" className="h-12 bg-white rounded p-2 object-fill" />
+              <img alt="BBB A+ Rating" className="h-12 bg-white rounded p-2 object-fill" src="https://start.nationaldebtrelief.com/_next/image?url=https%3A%2F%2Fimages.ctfassets.net%2F5xdc9rzhmhnq%2F5tJzAk64KVtKPW0nJifBB0%2Feec2e8a4260d5e08b7dafa41e80b06eb%2Fimage__9_.png%3Fw%3D120%26fm%3Dwebp%26fit%3Dfill&w=256&q=75" />
               <img src="https://images.pexels.com/photos/3943746/pexels-photo-3943746.jpeg" alt="AFCC Member" className="h-12 object-contain bg-white rounded p-2" />
             </div>
           </div>
