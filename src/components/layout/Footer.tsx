@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { NAV_ITEMS, COMPANY_PHONE } from '../../lib/constants';
 import Logo from './Logo';
 import { Phone, Mail, Facebook, Twitter, Instagram, Linkedin, Lock } from 'lucide-react';
-import AuthModal from '../auth/AuthModal';
 
 const Footer: React.FC = () => {
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const navigate = useNavigate();
+
+  const handleAdminClick = () => {
+    navigate('/admin/auth');
+  };
 
   return (
     <footer className="bg-gray-900 text-white">
@@ -141,7 +145,7 @@ const Footer: React.FC = () => {
                 Accessibility
               </Link>
               <button
-                onClick={() => setShowAdminLogin(true)}
+                onClick={handleAdminClick}
                 className="text-gray-400 hover:text-white text-sm flex items-center"
               >
                 <Lock className="h-3 w-3 mr-1" />
@@ -154,12 +158,6 @@ const Footer: React.FC = () => {
           </p>
         </div>
       </div>
-
-      <AuthModal
-        isOpen={showAdminLogin}
-        onClose={() => setShowAdminLogin(false)}
-        defaultMode="signin"
-      />
     </footer>
   );
 };

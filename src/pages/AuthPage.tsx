@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
@@ -29,7 +30,7 @@ const AuthPage: React.FC = () => {
         navigate('/account');
       }
     }
-  }, [user, isAdmin, isAdminAuth]);
+  }, [user, isAdmin, isAdminAuth, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,24 +101,21 @@ const AuthPage: React.FC = () => {
                   <Input
                     label="First Name"
                     value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFirstName(e.target.value)}
                     required
-                    icon={<User className="h-5 w-5 text-gray-400" />}
                   />
                   <Input
                     label="Last Name"
                     value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLastName(e.target.value)}
                     required
-                    icon={<User className="h-5 w-5 text-gray-400" />}
                   />
                   <Input
                     label="Phone Number"
                     type="tel"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
                     required
-                    icon={<Phone className="h-5 w-5 text-gray-400" />}
                   />
                 </>
               )}
@@ -126,18 +124,16 @@ const AuthPage: React.FC = () => {
                 label="Email address"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                 required
-                icon={<Mail className="h-5 w-5 text-gray-400" />}
               />
 
               <Input
                 label="Password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                 required
-                icon={<Lock className="h-5 w-5 text-gray-400" />}
               />
 
               {error && (

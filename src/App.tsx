@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './lib/auth';
@@ -32,14 +33,14 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   
   if (loading) {
     return <div>Loading...</div>;
   }
   
-  if (!user || !user.email?.endsWith('@nationaldebtrelief.com')) {
-    return <Navigate to="/" />;
+  if (!user || !isAdmin) {
+    return <Navigate to="/admin/auth" />;
   }
   
   return <>{children}</>;
@@ -61,6 +62,7 @@ function App() {
           <Route path="/client-stories" element={<ClientStoriesPage />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/admin/auth" element={<AuthPage />} />
           
           {/* Protected routes */}
           <Route path="/account" element={

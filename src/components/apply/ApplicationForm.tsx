@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -6,6 +7,7 @@ import { z } from 'zod';
 import { Shield, AlertCircle } from 'lucide-react';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
+import Select from '../ui/Select';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/auth';
 
@@ -73,6 +75,8 @@ const ApplicationForm: React.FC = () => {
   const onSubmit = async (data: ApplicationFormData) => {
     try {
       setSubmitting(true);
+      console.log("Submitting application data:", data);
+      
       const { error } = await supabase.from('applications').insert({
         user_id: user?.id,
         status: 'pending',
@@ -83,13 +87,22 @@ const ApplicationForm: React.FC = () => {
         phone: data.phone,
         address: data.address,
         date_of_birth: data.dateOfBirth,
-        ssn_last_four: data.ssnLastFour
+        ssn_last_four: data.ssnLastFour,
+        employment_status: data.employmentStatus,
+        monthly_income: parseFloat(data.monthlyIncome),
+        created_at: new Date().toISOString()
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error submitting application:', error);
+        throw error;
+      }
+      
+      console.log("Application submitted successfully, navigating to success page");
       navigate('/apply/success');
     } catch (err) {
       console.error('Error submitting application:', err);
+      alert('There was an error submitting your application. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -97,7 +110,15 @@ const ApplicationForm: React.FC = () => {
 
   const handleNext = () => {
     const currentFields = steps[currentStep].fields;
-    const isValid = currentFields.every(field => !errors[field as keyof ApplicationFormData]);
+    let isValid = true;
+    
+    // Check if current step fields have errors
+    for (const field of currentFields) {
+      if (errors[field as keyof ApplicationFormData]) {
+        isValid = false;
+        break;
+      }
+    }
     
     if (isValid) {
       if (currentStep < steps.length - 1) {
@@ -117,7 +138,7 @@ const ApplicationForm: React.FC = () => {
       {/* Progress Bar */}
       <div className="mb-8">
         <div className="flex justify-between mb-2">
-          {steps.map((step, index) => (
+          {steps.map((_, index) => (
             <div
               key={index}
               className={`flex-1 ${
@@ -133,7 +154,7 @@ const ApplicationForm: React.FC = () => {
           ))}
         </div>
         <div className="flex justify-between text-sm text-gray-600">
-          {steps.map((step, index) => (
+          {steps.map((_, index) => (
             <div
               key={index}
               className={`${
@@ -219,23 +240,17 @@ const ApplicationForm: React.FC = () => {
               {...register('debtAmount')}
               error={errors.debtAmount?.message}
             />
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Employment Status
-              </label>
-              <select
-                {...register('employmentStatus')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              >
-                <option value="employed">Employed</option>
-                <option value="self-employed">Self-Employed</option>
-                <option value="unemployed">Unemployed</option>
-                <option value="retired">Retired</option>
-              </select>
-              {errors.employmentStatus && (
-                <p className="text-red-600 text-sm">{errors.employmentStatus.message}</p>
-              )}
-            </div>
+            <Select
+              label="Employment Status"
+              options={[
+                { value: 'employed', label: 'Employed' },
+                { value: 'self-employed', label: 'Self-Employed' },
+                { value: 'unemployed', label: 'Unemployed' },
+                { value: 'retired', label: 'Retired' }
+              ]}
+              {...register('employmentStatus')}
+              error={errors.employmentStatus?.message}
+            />
             <Input
               label="Monthly Income"
               type="number"
@@ -331,7 +346,7 @@ const ApplicationForm: React.FC = () => {
             type="button"
             variant="primary"
             onClick={handleNext}
-            className="ml-auto"
+            className={`${currentStep > 0 ? 'ml-auto' : ''}`}
             disabled={submitting}
           >
             {currentStep < steps.length - 1 ? 'Continue' : 'Submit Application'}

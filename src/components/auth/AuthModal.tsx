@@ -31,11 +31,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode = 's
         await signIn(email, password);
       } else {
         // Sign up with additional fields
-        await signUp(email, password, {
-          firstName,
-          lastName,
-          phone,
-        });
+        await signUp(email, password, firstName, lastName, phone);
       }
       onClose();
     } catch (err) {
