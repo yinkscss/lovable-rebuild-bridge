@@ -40,14 +40,15 @@ const HeroSection: React.FC = () => {
           </blockquote>
           
           <div className="mb-8">
-            <Button 
-              variant="primary" 
-              size="lg" 
-              className="bg-blue-500 hover:bg-blue-600"
-            >
-              Apply Now
-            </Button>
-          </div>
+          <a href="/apply">
+  <Button 
+    variant="primary" 
+    size="lg" 
+    className="bg-blue-500 hover:bg-blue-600"
+  >
+    Apply Now
+  </Button>
+</a>
           
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4 border-t border-blue-800 pt-4">
             <div className="text-center md:text-left">
