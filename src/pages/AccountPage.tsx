@@ -7,6 +7,7 @@ import Layout from '../components/layout/Layout';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { UserCog, LogOut } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const AccountPage: React.FC = () => {
   const [firstName, setFirstName] = useState('');
@@ -27,11 +28,12 @@ const AccountPage: React.FC = () => {
           return;
         }
 
+        // Try to get user profile from the users table
         const { data: profile, error: profileError } = await supabase
-          .from('profiles')
+          .from('users')
           .select('*')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
         if (profileError) {
           throw profileError;
@@ -44,20 +46,25 @@ const AccountPage: React.FC = () => {
           setPhone(profile.phone || '');
         } else {
           // If no profile exists, create one
-          await supabase.from('profiles').insert({
+          const userData = user.user_metadata || {};
+          
+          // Create a new profile with data from auth if available
+          await supabase.from('users').insert({
             id: user.id,
             email: user.email,
-            first_name: '',
-            last_name: '',
-            phone: ''
+            first_name: userData.first_name || '',
+            last_name: userData.last_name || '',
+            phone: userData.phone || ''
           });
-          setFirstName('');
-          setLastName('');
+          
+          setFirstName(userData.first_name || '');
+          setLastName(userData.last_name || '');
           setEmail(user.email || '');
-          setPhone('');
+          setPhone(userData.phone || '');
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
+        console.error("Error fetching profile:", err);
       } finally {
         setLoading(false);
       }
@@ -78,7 +85,7 @@ const AccountPage: React.FC = () => {
       }
 
       const { error: updateError } = await supabase
-        .from('profiles')
+        .from('users')
         .update({
           first_name: firstName,
           last_name: lastName,
@@ -92,18 +99,21 @@ const AccountPage: React.FC = () => {
         throw updateError;
       }
 
-      // Update email in auth
-      const { error: authUpdateError } = await supabase.auth.updateUser({ 
-        email: email 
-      });
-      
-      if (authUpdateError) {
-        throw authUpdateError;
+      // Update email in auth if it changed
+      if (email !== user.email) {
+        const { error: authUpdateError } = await supabase.auth.updateUser({ 
+          email: email 
+        });
+        
+        if (authUpdateError) {
+          throw authUpdateError;
+        }
       }
 
-      alert('Profile updated successfully!');
+      toast.success('Profile updated successfully!');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      toast.error('Failed to update profile');
     } finally {
       setLoading(false);
     }
@@ -112,18 +122,16 @@ const AccountPage: React.FC = () => {
   const handleSignOut = async () => {
     try {
       await signOut();
-      navigate('/auth');
+      navigate('/');
+      toast.success('Signed out successfully');
     } catch (error) {
       console.error('Error signing out:', error);
+      toast.error('Failed to sign out');
     }
   };
 
   if (loading) {
-    return <Layout><div>Loading...</div></Layout>;
-  }
-
-  if (error) {
-    return <Layout><div>Error: {error}</div></Layout>;
+    return <Layout><div className="py-12 bg-gray-50 flex justify-center">Loading...</div></Layout>;
   }
 
   return (
@@ -142,6 +150,13 @@ const AccountPage: React.FC = () => {
                   Sign Out
                 </Button>
               </div>
+              
+              {error && (
+                <div className="mb-4 p-2 bg-red-50 border border-red-100 text-red-600 rounded-md">
+                  {error}
+                </div>
+              )}
+              
               <form onSubmit={handleUpdateProfile} className="space-y-4">
                 <Input
                   label="First Name"
@@ -169,6 +184,7 @@ const AccountPage: React.FC = () => {
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
+                  required
                 />
                 <Button type="submit" variant="primary" fullWidth disabled={loading}>
                   Update Profile

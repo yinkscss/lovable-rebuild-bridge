@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
@@ -5,6 +6,7 @@ import Layout from '../components/layout/Layout';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import { Shield } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const AuthPage: React.FC = () => {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
@@ -15,6 +17,7 @@ const AuthPage: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  
   const { signIn, signUp, user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -27,6 +30,8 @@ const AuthPage: React.FC = () => {
         navigate('/admin/dashboard');
       } else if (!isAdminAuth) {
         navigate('/account');
+      } else if (isAdminAuth && !isAdmin) {
+        setError('You do not have admin access');
       }
     }
   }, [user, isAdmin, isAdminAuth, navigate]);
@@ -39,17 +44,20 @@ const AuthPage: React.FC = () => {
     try {
       if (mode === 'signin') {
         await signIn(email, password);
+        // The redirection is handled in the useEffect above
       } else {
-        await signUp(email, password, firstName, lastName, phone);
-        // Show success message or redirect
-        if (isAdminAuth) {
-          navigate('/admin/dashboard');
-        } else {
-          navigate('/account');
+        // Check all required fields for signup
+        if (!firstName || !lastName || !phone || !email || !password) {
+          throw new Error('All fields are required for registration');
         }
+
+        await signUp(email, password, firstName, lastName, phone);
+        toast.success('Account created successfully! Please sign in.');
+        setMode('signin');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Authentication error:', err);
     } finally {
       setLoading(false);
     }

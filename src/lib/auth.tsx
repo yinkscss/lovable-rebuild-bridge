@@ -35,38 +35,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // Check active sessions and sets the user
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      checkAdminStatus(session?.user?.id);
+    // Set up auth state listener FIRST to prevent missing auth events
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      
+      // Check admin status if user exists
+      if (currentUser) {
+        checkAdminStatus(currentUser.id);
+      } else {
+        setIsAdmin(false);
+      }
+      
       setLoading(false);
     });
 
-    // Listen for changes on auth state
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
-      checkAdminStatus(session?.user?.id);
+      if (session?.user) {
+        checkAdminStatus(session.user.id);
+      }
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const checkAdminStatus = async (userId: string | undefined) => {
-    if (!userId) {
-      setIsAdmin(false);
-      return;
-    }
+  const checkAdminStatus = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
 
-    const { data, error } = await supabase
-      .from('admin_users')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
-
-    if (!error && data) {
-      setIsAdmin(true);
-    } else {
+      if (!error && data) {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+    } catch (error) {
+      console.error("Error checking admin status:", error);
       setIsAdmin(false);
     }
   };
@@ -77,32 +87,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signUp = async (email: string, password: string, firstName: string, lastName: string, phone: string) => {
-    const { data: { user }, error: signUpError } = await supabase.auth.signUp({ 
-      email, 
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`
-      }
-    });
-
-    if (signUpError) throw signUpError;
-
-    if (user) {
-      const { error: profileError } = await supabase
-        .from('users')
-        .insert([
-          {
-            id: user.id,
-            email,
+    try {
+      const { data: { user }, error: signUpError } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
             first_name: firstName,
             last_name: lastName,
-            phone,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            phone: phone
           }
-        ]);
+        }
+      });
 
-      if (profileError) throw profileError;
+      if (signUpError) throw signUpError;
+
+      if (user) {
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert([
+            {
+              id: user.id,
+              email,
+              first_name: firstName,
+              last_name: lastName,
+              phone,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }
+          ]);
+
+        if (profileError) throw profileError;
+      }
+    } catch (error) {
+      console.error("Error in signUp:", error);
+      throw error;
     }
   };
 

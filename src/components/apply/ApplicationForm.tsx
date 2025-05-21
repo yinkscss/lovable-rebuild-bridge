@@ -9,6 +9,7 @@ import Button from '../ui/Button';
 import Select from '../ui/Select';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/auth';
+import { toast } from 'react-hot-toast';
 
 const applicationSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -95,14 +96,16 @@ const ApplicationForm: React.FC = () => {
 
       if (error) {
         console.error('Error submitting application:', error);
+        toast.error('Error submitting application: ' + error.message);
         throw error;
       }
       
+      toast.success('Application submitted successfully!');
       console.log("Application submitted successfully, navigating to success page");
       navigate('/apply/success');
     } catch (err) {
       console.error('Error submitting application:', err);
-      alert('There was an error submitting your application. Please try again.');
+      toast.error('There was an error submitting your application. Please try again.');
     } finally {
       setSubmitting(false);
     }

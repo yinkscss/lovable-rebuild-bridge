@@ -17,12 +17,13 @@ import PaymentsPage from './pages/admin/PaymentsPage';
 import AccountPage from './pages/AccountPage';
 import AuthPage from './pages/AuthPage';
 import { useAuth } from './lib/auth';
+import { Toaster } from 'react-hot-toast';
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
   
   if (!user) {
@@ -36,11 +37,15 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading, isAdmin } = useAuth();
   
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
   
-  if (!user || !isAdmin) {
+  if (!user) {
     return <Navigate to="/admin/auth" />;
+  }
+  
+  if (!isAdmin) {
+    return <Navigate to="/" />;
   }
   
   return <>{children}</>;
@@ -49,6 +54,7 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
 function App() {
   return (
     <AuthProvider>
+      <Toaster position="top-center" />
       <Router>
         <Routes>
           {/* Public routes */}
@@ -63,6 +69,7 @@ function App() {
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/admin/auth" element={<AuthPage />} />
+          <Route path="/auth/callback" element={<Navigate to="/account" replace />} />
           
           {/* Protected routes */}
           <Route path="/account" element={

@@ -5,6 +5,7 @@ import { NAV_ITEMS, COMPANY_PHONE } from '../../lib/constants';
 import Button from '../ui/Button';
 import Logo from './Logo';
 import { useAuth } from '../../lib/auth';
+import { toast } from 'react-hot-toast';
 
 const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -36,8 +37,10 @@ const Header: React.FC = () => {
     try {
       await signOut();
       navigate('/');
+      toast.success('Signed out successfully');
     } catch (error) {
       console.error('Error signing out:', error);
+      toast.error('Failed to sign out');
     }
   };
 
