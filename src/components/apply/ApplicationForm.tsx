@@ -295,7 +295,7 @@ const ApplicationForm: React.FC = () => {
       <div className="mt-12 pt-8 border-t border-gray-200">
         <div className="flex justify-center space-x-8">
           <img alt="Forbes Advisor Badge" className="h-12 object-contain" src="https://images.ctfassets.net/5xdc9rzhmhnq/2w76p4cNJtyPzBIB2ksKPF/aa2c8cde64b9ab878b081a8103a2f987/Wall_street_journal_logo.svg" />
-          <img src="https://images.pexels.com/photos/3943746/pexels-photo-3943746.jpeg" alt="Bankrate Certification" className="h-12 object-contain" />
+          <img alt="Bankrate Certification" className="h-12 object-contain" src="https://images.ctfassets.net/5xdc9rzhmhnq/5Lu8G1TwoxMc3Qu8cXSeV/c0b2d4eeeb3c79e961ef13aeb776c353/NDR-Badge-2025__1_-99-__3_.svg" />
           <img src="https://images.pexels.com/photos/3943746/pexels-photo-3943746.jpeg" alt="BBB Accredited" className="h-12 object-contain" />
         </div>
       </div>
