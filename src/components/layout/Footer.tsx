@@ -1,19 +1,14 @@
-
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { NAV_ITEMS, COMPANY_PHONE } from '../../lib/constants';
 import Logo from './Logo';
 import { Phone, Mail, Facebook, Twitter, Instagram, Linkedin, Lock } from 'lucide-react';
-
 const Footer: React.FC = () => {
   const navigate = useNavigate();
-
   const handleAdminClick = () => {
     navigate('/admin/auth');
   };
-
-  return (
-    <footer className="bg-gray-900 text-white">
+  return <footer className="bg-gray-900 text-white">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Information */}
@@ -40,13 +35,11 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="text-lg font-medium mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              {NAV_ITEMS.map((item) => (
-                <li key={item.label}>
+              {NAV_ITEMS.map(item => <li key={item.label}>
                   <Link to={item.path} className="text-gray-300 hover:text-white">
                     {item.label}
                   </Link>
-                </li>
-              ))}
+                </li>)}
             </ul>
           </div>
 
@@ -102,26 +95,10 @@ const Footer: React.FC = () => {
             
             <h3 className="text-lg font-medium mb-4">Certifications</h3>
             <div className="grid grid-cols-2 gap-4">
-              <img
-                src="https://images.pexels.com/photos/3943746/pexels-photo-3943746.jpeg"
-                alt="Forbes Advisor"
-                className="h-12 object-contain bg-white rounded p-2"
-              />
-              <img
-                src="https://images.pexels.com/photos/3943746/pexels-photo-3943746.jpeg"
-                alt="Bankrate"
-                className="h-12 object-contain bg-white rounded p-2"
-              />
-              <img
-                src="https://images.pexels.com/photos/3943746/pexels-photo-3943746.jpeg"
-                alt="BBB A+ Rating"
-                className="h-12 object-contain bg-white rounded p-2"
-              />
-              <img
-                src="https://images.pexels.com/photos/3943746/pexels-photo-3943746.jpeg"
-                alt="AFCC Member"
-                className="h-12 object-contain bg-white rounded p-2"
-              />
+              <img alt="Forbes Advisor" className="h-12 bg-white rounded p-2 object-fill" src="/lovable-uploads/92916aa2-358b-4c1e-a9ac-b389b6316169.png" />
+              <img alt="Bankrate" src="https://images.ctfassets.net/5xdc9rzhmhnq/2w76p4cNJtyPzBIB2ksKPF/aa2c8cde64b9ab878b081a8103a2f987/Wall_street_journal_logo.svg" className="h-12 bg-white rounded p-2 object-fill" />
+              <img src="https://images.pexels.com/photos/3943746/pexels-photo-3943746.jpeg" alt="BBB A+ Rating" className="h-12 bg-white rounded p-2 object-fill" />
+              <img src="https://images.pexels.com/photos/3943746/pexels-photo-3943746.jpeg" alt="AFCC Member" className="h-12 object-contain bg-white rounded p-2" />
             </div>
           </div>
         </div>
@@ -144,10 +121,7 @@ const Footer: React.FC = () => {
               <Link to="/accessibility" className="text-gray-400 hover:text-white text-sm">
                 Accessibility
               </Link>
-              <button
-                onClick={handleAdminClick}
-                className="text-gray-400 hover:text-white text-sm flex items-center"
-              >
+              <button onClick={handleAdminClick} className="text-gray-400 hover:text-white text-sm flex items-center">
                 <Lock className="h-3 w-3 mr-1" />
                 Admin
               </button>
@@ -158,8 +132,6 @@ const Footer: React.FC = () => {
           </p>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
