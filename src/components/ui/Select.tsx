@@ -31,6 +31,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(({
   
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (onChange) {
+      // This will handle both react-hook-form onChange and regular onChange
       onChange(e);
     }
   };

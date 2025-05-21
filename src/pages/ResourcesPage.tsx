@@ -1,12 +1,21 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import { Card } from '../components/ui/Card';
 import { supabase } from '../lib/supabase';
 
+interface Resource {
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  category?: string;
+}
+
 const ResourcesPage: React.FC = () => {
   const params = useParams();
-  const [resources, setResources] = useState([]);
+  const [resources, setResources] = useState<Resource[]>([]);
   const category = params.category;
 
   useEffect(() => {
@@ -21,7 +30,7 @@ const ResourcesPage: React.FC = () => {
       if (error) {
         console.error('Error fetching resources:', error);
       } else {
-        setResources(data || []);
+        setResources(data as Resource[] || []);
       }
     };
 

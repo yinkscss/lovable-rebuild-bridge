@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
 import { DEBT_RANGES, VALUE_PROPS } from '../../lib/constants';
@@ -20,6 +21,14 @@ const DebtCalculator: React.FC = () => {
     
     // Navigate to application page with selected debt amount
     navigate(`/apply?debt=${debtAmount}`);
+  };
+
+  const handleDebtAmountChange = (valueOrEvent: string | React.ChangeEvent<HTMLSelectElement>) => {
+    if (typeof valueOrEvent === 'string') {
+      setDebtAmount(valueOrEvent);
+    } else {
+      setDebtAmount(valueOrEvent.target.value);
+    }
   };
   
   return (
@@ -48,7 +57,7 @@ const DebtCalculator: React.FC = () => {
                 label: range.label
               }))}
               value={debtAmount}
-              onChange={setDebtAmount}
+              onChange={handleDebtAmountChange}
               label="Select Debt Amount"
               placeholder="Select Debt Amount"
               error={error}

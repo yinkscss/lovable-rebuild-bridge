@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Shield, AlertCircle } from 'lucide-react';
@@ -41,6 +40,7 @@ const ApplicationForm: React.FC = () => {
     handleSubmit,
     formState: { errors },
     watch,
+    control
   } = useForm<ApplicationFormData>({
     resolver: zodResolver(applicationSchema),
     defaultValues: {
@@ -240,16 +240,29 @@ const ApplicationForm: React.FC = () => {
               {...register('debtAmount')}
               error={errors.debtAmount?.message}
             />
-            <Select
-              label="Employment Status"
-              options={[
-                { value: 'employed', label: 'Employed' },
-                { value: 'self-employed', label: 'Self-Employed' },
-                { value: 'unemployed', label: 'Unemployed' },
-                { value: 'retired', label: 'Retired' }
-              ]}
-              {...register('employmentStatus')}
-              error={errors.employmentStatus?.message}
+            <Controller
+              name="employmentStatus"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  label="Employment Status"
+                  options={[
+                    { value: 'employed', label: 'Employed' },
+                    { value: 'self-employed', label: 'Self-Employed' },
+                    { value: 'unemployed', label: 'Unemployed' },
+                    { value: 'retired', label: 'Retired' }
+                  ]}
+                  value={field.value}
+                  onChange={(valueOrEvent) => {
+                    if (typeof valueOrEvent === 'string') {
+                      field.onChange(valueOrEvent);
+                    } else {
+                      field.onChange(valueOrEvent.target.value);
+                    }
+                  }}
+                  error={errors.employmentStatus?.message}
+                />
+              )}
             />
             <Input
               label="Monthly Income"

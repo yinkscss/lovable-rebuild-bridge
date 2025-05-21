@@ -1,12 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth';
 import Layout from '../components/layout/Layout';
-import { Card } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
-import Select from '../components/ui/Select';
 import { UserCog, LogOut } from 'lucide-react';
 
 const AccountPage: React.FC = () => {
@@ -93,8 +92,14 @@ const AccountPage: React.FC = () => {
         throw updateError;
       }
 
-      // Update user object
-      await user.update({ email: email });
+      // Update email in auth
+      const { error: authUpdateError } = await supabase.auth.updateUser({ 
+        email: email 
+      });
+      
+      if (authUpdateError) {
+        throw authUpdateError;
+      }
 
       alert('Profile updated successfully!');
     } catch (err) {
