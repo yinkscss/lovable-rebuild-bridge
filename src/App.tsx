@@ -14,6 +14,7 @@ import AdminLayout from './components/admin/AdminLayout';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import ApplicationsPage from './pages/admin/ApplicationsPage';
 import PaymentsPage from './pages/admin/PaymentsPage';
+import UserDashboardPage from './pages/UserDashboardPage';
 import AccountPage from './pages/AccountPage';
 import AuthPage from './pages/AuthPage';
 import { useAuth } from './lib/auth';
@@ -69,12 +70,18 @@ function App() {
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/admin/auth" element={<AuthPage />} />
-          <Route path="/auth/callback" element={<Navigate to="/account" replace />} />
+          <Route path="/auth/callback" element={<Navigate to="/dashboard" replace />} />
           
           {/* Protected routes */}
           <Route path="/account" element={
             <PrivateRoute>
-              <AccountPage />
+              <Navigate to="/dashboard" replace />
+            </PrivateRoute>
+          } />
+          
+          <Route path="/dashboard" element={
+            <PrivateRoute>
+              <UserDashboardPage />
             </PrivateRoute>
           } />
           

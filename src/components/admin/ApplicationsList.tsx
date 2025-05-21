@@ -1,82 +1,134 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Check, X, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import Button from '../ui/Button';
-import { ApplicationStatus } from '../../types';
+import { supabase } from '../../lib/supabase';
+import { toast } from 'react-hot-toast';
 
-// Mock data for demonstration
-const mockApplications: ApplicationStatus[] = [
-  {
-    id: '1',
-    status: 'pending',
-    applicationData: {
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john.doe@example.com',
-      phone: '555-123-4567',
-      debtAmount: '3',
-    },
-    createdAt: '2023-06-15T10:30:00Z',
-    updatedAt: '2023-06-15T10:30:00Z',
-  },
-  {
-    id: '2',
-    status: 'approved',
-    applicationData: {
-      firstName: 'Jane',
-      lastName: 'Smith',
-      email: 'jane.smith@example.com',
-      phone: '555-987-6543',
-      debtAmount: '4',
-    },
-    createdAt: '2023-06-14T14:45:00Z',
-    updatedAt: '2023-06-14T15:20:00Z',
-  },
-  {
-    id: '3',
-    status: 'declined',
-    applicationData: {
-      firstName: 'Bob',
-      lastName: 'Johnson',
-      email: 'bob.johnson@example.com',
-      phone: '555-456-7890',
-      debtAmount: '2',
-    },
-    createdAt: '2023-06-13T09:15:00Z',
-    updatedAt: '2023-06-13T10:00:00Z',
-  },
-];
+interface Application {
+  id: string;
+  status: 'pending' | 'approved' | 'declined';
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  debt_amount: number;
+  address?: string;
+  date_of_birth?: string;
+  ssn_last_four?: string;
+  employment_status?: string;
+  monthly_income?: number;
+  created_at: string;
+  updated_at: string;
+}
 
 const ApplicationsList: React.FC = () => {
-  const [applications, setApplications] = useState<ApplicationStatus[]>(mockApplications);
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'approved' | 'declined'>('all');
+
+  // Load applications
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('applications')
+          .select('*')
+          .order('created_at', { ascending: false });
+          
+        if (error) {
+          throw error;
+        }
+        
+        setApplications(data || []);
+      } catch (error) {
+        console.error('Error fetching applications:', error);
+        toast.error('Failed to load applications');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchApplications();
+
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel('public:applications')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'applications' }, (payload) => {
+        console.log('Change received!', payload);
+        // Refresh the applications list
+        fetchApplications();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
-  const handleApprove = (id: string) => {
-    setApplications(applications.map(app => 
-      app.id === id 
-        ? { ...app, status: 'approved', updatedAt: new Date().toISOString() } 
-        : app
-    ));
+  const handleApprove = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('applications')
+        .update({ 
+          status: 'approved', 
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setApplications(applications.map(app => 
+        app.id === id 
+          ? { ...app, status: 'approved', updated_at: new Date().toISOString() } 
+          : app
+      ));
+      
+      toast.success('Application approved successfully');
+    } catch (error) {
+      console.error('Error approving application:', error);
+      toast.error('Failed to approve application');
+    }
   };
 
-  const handleDecline = (id: string) => {
-    setApplications(applications.map(app => 
-      app.id === id 
-        ? { ...app, status: 'declined', updatedAt: new Date().toISOString() } 
-        : app
-    ));
+  const handleDecline = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('applications')
+        .update({ 
+          status: 'declined', 
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setApplications(applications.map(app => 
+        app.id === id 
+          ? { ...app, status: 'declined', updated_at: new Date().toISOString() } 
+          : app
+      ));
+      
+      toast.success('Application declined');
+    } catch (error) {
+      console.error('Error declining application:', error);
+      toast.error('Failed to decline application');
+    }
   };
 
   const filteredApplications = applications.filter(app => {
     const matchesSearch = 
-      app.applicationData.firstName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      app.applicationData.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.applicationData.email.toLowerCase().includes(searchTerm.toLowerCase());
+      `${app.first_name} ${app.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      app.email.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesFilter = filterStatus === 'all' || app.status === filterStatus;
     
@@ -92,6 +144,18 @@ const ApplicationsList: React.FC = () => {
       minute: '2-digit',
     });
   };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-2xl font-bold mb-6">Applications Management</h2>
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+          <span className="ml-3">Loading applications...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
@@ -171,16 +235,16 @@ const ApplicationsList: React.FC = () => {
                       <div className="flex items-center">
                         <div>
                           <div className="text-sm font-medium text-gray-900">
-                            {application.applicationData.firstName} {application.applicationData.lastName}
+                            {application.first_name} {application.last_name}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {application.applicationData.email}
+                            {application.email}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(application.createdAt)}
+                      {formatDate(application.created_at)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
@@ -198,8 +262,8 @@ const ApplicationsList: React.FC = () => {
                             size="sm"
                             className="mr-2 text-green-600 border-green-600 hover:bg-green-50"
                             onClick={() => handleApprove(application.id)}
-                            icon={<Check className="h-4 w-4" />}
                           >
+                            <Check className="h-4 w-4 mr-1" />
                             Approve
                           </Button>
                           <Button
@@ -207,8 +271,8 @@ const ApplicationsList: React.FC = () => {
                             size="sm"
                             className="text-red-600 border-red-600 hover:bg-red-50"
                             onClick={() => handleDecline(application.id)}
-                            icon={<X className="h-4 w-4" />}
                           >
+                            <X className="h-4 w-4 mr-1" />
                             Decline
                           </Button>
                         </>
@@ -240,16 +304,18 @@ const ApplicationsList: React.FC = () => {
                           <h4 className="font-medium mb-2">Application Details</h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                              <p><span className="font-medium">First Name:</span> {application.applicationData.firstName}</p>
-                              <p><span className="font-medium">Last Name:</span> {application.applicationData.lastName}</p>
-                              <p><span className="font-medium">Email:</span> {application.applicationData.email}</p>
-                              <p><span className="font-medium">Phone:</span> {application.applicationData.phone}</p>
+                              <p><span className="font-medium">First Name:</span> {application.first_name}</p>
+                              <p><span className="font-medium">Last Name:</span> {application.last_name}</p>
+                              <p><span className="font-medium">Email:</span> {application.email}</p>
+                              <p><span className="font-medium">Phone:</span> {application.phone}</p>
+                              <p><span className="font-medium">Address:</span> {application.address || 'N/A'}</p>
                             </div>
                             <div>
-                              <p><span className="font-medium">Debt Amount Range:</span> {application.applicationData.debtAmount}</p>
-                              <p><span className="font-medium">Date Submitted:</span> {formatDate(application.createdAt)}</p>
-                              <p><span className="font-medium">Last Updated:</span> {formatDate(application.updatedAt)}</p>
-                              <p><span className="font-medium">Status:</span> {application.status}</p>
+                              <p><span className="font-medium">Debt Amount:</span> ${application.debt_amount}</p>
+                              <p><span className="font-medium">Employment Status:</span> {application.employment_status || 'N/A'}</p>
+                              <p><span className="font-medium">Monthly Income:</span> ${application.monthly_income || 'N/A'}</p>
+                              <p><span className="font-medium">Date Submitted:</span> {formatDate(application.created_at)}</p>
+                              <p><span className="font-medium">Last Updated:</span> {formatDate(application.updated_at)}</p>
                             </div>
                           </div>
                         </div>

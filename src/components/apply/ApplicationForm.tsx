@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
@@ -121,14 +122,27 @@ const ApplicationForm: React.FC = () => {
         isValid = false;
         break;
       }
+      
+      // Also check if required fields are filled
+      if (currentFields.includes(field) && field !== 'agreeToTerms') {
+        const value = watch(field as keyof ApplicationFormData);
+        if (!value || (typeof value === 'string' && value.trim() === '')) {
+          isValid = false;
+          break;
+        }
+      }
     }
     
     if (isValid) {
       if (currentStep < steps.length - 1) {
         setCurrentStep(prev => prev + 1);
       } else {
+        // Submit the form
         handleSubmit(onSubmit)();
       }
+    } else {
+      // Show form validation errors
+      toast.error('Please fill out all required fields correctly.');
     }
   };
 
@@ -324,6 +338,18 @@ const ApplicationForm: React.FC = () => {
                   <dt className="text-gray-600">Debt Amount:</dt>
                   <dd>${watch('debtAmount')}</dd>
                 </div>
+                <div className="grid grid-cols-2">
+                  <dt className="text-gray-600">Employment Status:</dt>
+                  <dd>{watch('employmentStatus')}</dd>
+                </div>
+                <div className="grid grid-cols-2">
+                  <dt className="text-gray-600">Monthly Income:</dt>
+                  <dd>${watch('monthlyIncome')}</dd>
+                </div>
+                <div className="grid grid-cols-2">
+                  <dt className="text-gray-600">Address:</dt>
+                  <dd>{watch('address')}</dd>
+                </div>
               </dl>
             </div>
 
@@ -353,6 +379,7 @@ const ApplicationForm: React.FC = () => {
               type="button"
               variant="outline"
               onClick={handlePrevious}
+              disabled={submitting}
             >
               Previous
             </Button>

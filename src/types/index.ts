@@ -1,3 +1,4 @@
+
 export interface Testimonial {
   id: string;
   name: string;
@@ -39,6 +40,24 @@ export interface ApplicationStatus {
   applicationData: ApplicationFormData;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Application {
+  id: string;
+  user_id: string;
+  status: 'pending' | 'approved' | 'declined';
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  debt_amount: number;
+  address?: string;
+  date_of_birth?: string;
+  ssn_last_four?: string;
+  employment_status?: string;
+  monthly_income?: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface PaymentMethod {
