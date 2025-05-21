@@ -285,7 +285,7 @@ const ApplicationForm: React.FC = () => {
               Previous
             </Button>}
           
-          <Button type="button" variant="primary" onClick={handleSubmit} className={`${currentStep > 0 ? 'ml-auto' : ''}`} disabled={submitting}>
+          <Button type="button" variant="primary" onClick={handleNext} className={`${currentStep > 0 ? 'ml-auto' : ''}`} disabled={submitting}>
             {currentStep < steps.length - 1 ? 'Continue' : 'Submit Application'}
           </Button>
         </div>
