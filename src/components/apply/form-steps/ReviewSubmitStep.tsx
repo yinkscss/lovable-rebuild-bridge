@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { UseFormRegister, FieldErrors } from 'react-hook-form';
-import { Check } from 'lucide-react';
 
 interface ReviewSubmitStepProps {
   watch: any;
