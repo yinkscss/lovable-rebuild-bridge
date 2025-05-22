@@ -15,10 +15,12 @@ import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import ApplicationsPage from './pages/admin/ApplicationsPage';
 import PaymentsPage from './pages/admin/PaymentsPage';
 import UserDashboardPage from './pages/UserDashboardPage';
-// Removed unused AccountPage import
 import AuthPage from './pages/AuthPage';
 import { useAuth } from './lib/auth';
 import { Toaster } from 'react-hot-toast';
+import NotFoundPage from './pages/NotFoundPage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -71,6 +73,8 @@ function App() {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/admin/auth" element={<AuthPage />} />
           <Route path="/auth/callback" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
           
           {/* Protected routes */}
           <Route path="/account" element={
@@ -97,8 +101,8 @@ function App() {
             <Route path="payments" element={<PaymentsPage />} />
           </Route>
 
-          {/* Fallback route */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* 404 route */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>
     </AuthProvider>
