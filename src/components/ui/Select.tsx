@@ -1,6 +1,5 @@
 
 import React, { forwardRef } from 'react';
-import { FieldError, FieldErrorsImpl, Merge } from 'react-hook-form';
 
 interface SelectOption {
   value: string;
@@ -10,7 +9,7 @@ interface SelectOption {
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   options: SelectOption[];
-  error?: string | FieldError | Merge<FieldError, FieldErrorsImpl<any>> | React.ReactNode;
+  error?: string;
   fullWidth?: boolean;
   onChange?: (value: string | React.ChangeEvent<HTMLSelectElement>) => void;
   placeholder?: string;
@@ -73,7 +72,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(({
           </svg>
         </div>
       </div>
-      {error && <p className="mt-1 text-sm text-red-600">{typeof error === 'object' && error !== null && 'message' in error ? String(error.message) : String(error)}</p>}
+      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
   );
 });
