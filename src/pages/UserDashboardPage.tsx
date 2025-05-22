@@ -7,7 +7,8 @@ import { useAuth } from '../lib/auth';
 import { Card } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { toast } from 'react-hot-toast';
-import { Check, Clock, Edit, MessageSquare } from 'lucide-react';
+import { Edit, MessageSquare } from 'lucide-react';
+// Removed unused Check and Clock imports
 import UserProfileForm from '../components/dashboard/UserProfileForm';
 import SupportForm from '../components/dashboard/SupportForm';
 import ApplicationStatus from '../components/dashboard/ApplicationStatus';

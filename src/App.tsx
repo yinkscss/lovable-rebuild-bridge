@@ -15,7 +15,7 @@ import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import ApplicationsPage from './pages/admin/ApplicationsPage';
 import PaymentsPage from './pages/admin/PaymentsPage';
 import UserDashboardPage from './pages/UserDashboardPage';
-import AccountPage from './pages/AccountPage';
+// Removed unused AccountPage import
 import AuthPage from './pages/AuthPage';
 import { useAuth } from './lib/auth';
 import { Toaster } from 'react-hot-toast';

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '../../lib/auth';
-import { supabase } from '../../lib/supabase';
+// Removed unused supabase import
 import Input from '../ui/Input';
 import Button from '../ui/Button';
 import { toast } from 'react-hot-toast';
