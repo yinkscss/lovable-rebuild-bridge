@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Check, X, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'react-hot-toast';
 import ApplicationsListItem from './ApplicationsListItem';
