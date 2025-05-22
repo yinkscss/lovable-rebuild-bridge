@@ -39,7 +39,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
         `}
         {...props}
       />
-      {error && <p className="mt-1 text-sm text-red-600">{error.toString()}</p>}
+      {error && <p className="mt-1 text-sm text-red-600">{typeof error === 'object' && error !== null && 'message' in error ? String(error.message) : String(error)}</p>}
     </div>
   );
 });
