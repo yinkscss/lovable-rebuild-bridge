@@ -1,8 +1,10 @@
+
 import React, { forwardRef } from 'react';
+import { FieldError, FieldErrorsImpl, Merge } from 'react-hook-form';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
-  error?: string;
+  error?: string | FieldError | Merge<FieldError, FieldErrorsImpl<any>> | React.ReactNode;
   fullWidth?: boolean;
 }
 
@@ -38,7 +40,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
         `}
         {...props}
       />
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-600">{typeof error === 'object' && error !== null && 'message' in error ? String(error.message) : String(error)}</p>}
     </div>
   );
 });

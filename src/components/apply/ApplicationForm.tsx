@@ -1,15 +1,21 @@
+
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Shield, AlertCircle } from 'lucide-react';
-import Input from '../ui/Input';
-import Button from '../ui/Button';
-import Select from '../ui/Select';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/auth';
 import { toast } from 'react-hot-toast';
+import FormProgress from './FormProgress';
+import SecurityNotice from './SecurityNotice';
+import BasicInfoStep from './form-steps/BasicInfoStep';
+import FinancialInfoStep from './form-steps/FinancialInfoStep';
+import AdditionalDetailsStep from './form-steps/AdditionalDetailsStep';
+import ReviewSubmitStep from './form-steps/ReviewSubmitStep';
+import TrustIndicators from './TrustIndicators';
+import EligibilityRequirements from './EligibilityRequirements';
+
 const applicationSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
@@ -25,21 +31,20 @@ const applicationSchema = z.object({
     message: 'You must agree to the terms and conditions'
   })
 });
+
 type ApplicationFormData = z.infer<typeof applicationSchema>;
+
 const ApplicationForm: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  
   const {
     register,
     handleSubmit,
-    formState: {
-      errors
-    },
+    formState: { errors },
     watch,
     control
   } = useForm<ApplicationFormData>({
@@ -49,30 +54,35 @@ const ApplicationForm: React.FC = () => {
       agreeToTerms: false
     }
   });
-  const steps = [{
-    title: 'Basic Information',
-    description: 'Let\'s start with your basic details',
-    fields: ['firstName', 'lastName', 'email', 'phone']
-  }, {
-    title: 'Financial Information',
-    description: 'Tell us about your financial situation',
-    fields: ['debtAmount', 'employmentStatus', 'monthlyIncome']
-  }, {
-    title: 'Additional Details',
-    description: 'We need some additional information to process your application',
-    fields: ['address', 'dateOfBirth', 'ssnLastFour']
-  }, {
-    title: 'Review & Submit',
-    description: 'Please review your information and submit your application',
-    fields: ['agreeToTerms']
-  }];
+  
+  const steps = [
+    {
+      title: 'Basic Information',
+      description: 'Let\'s start with your basic details',
+      fields: ['firstName', 'lastName', 'email', 'phone']
+    },
+    {
+      title: 'Financial Information',
+      description: 'Tell us about your financial situation',
+      fields: ['debtAmount', 'employmentStatus', 'monthlyIncome']
+    },
+    {
+      title: 'Additional Details',
+      description: 'We need some additional information to process your application',
+      fields: ['address', 'dateOfBirth', 'ssnLastFour']
+    },
+    {
+      title: 'Review & Submit',
+      description: 'Please review your information and submit your application',
+      fields: ['agreeToTerms']
+    }
+  ];
+
   const onSubmit = async (data: ApplicationFormData) => {
     try {
       setSubmitting(true);
       console.log("Submitting application data:", data);
-      const {
-        error
-      } = await supabase.from('applications').insert({
+      const { error } = await supabase.from('applications').insert({
         user_id: user?.id,
         status: 'pending',
         debt_amount: parseFloat(data.debtAmount),
@@ -87,11 +97,13 @@ const ApplicationForm: React.FC = () => {
         monthly_income: parseFloat(data.monthlyIncome),
         created_at: new Date().toISOString()
       });
+
       if (error) {
         console.error('Error submitting application:', error);
         toast.error('Error submitting application: ' + error.message);
         throw error;
       }
+
       toast.success('Application submitted successfully!');
       console.log("Application submitted successfully, navigating to success page");
       navigate('/apply/success');
@@ -102,6 +114,7 @@ const ApplicationForm: React.FC = () => {
       setSubmitting(false);
     }
   };
+
   const handleNext = () => {
     const currentFields = steps[currentStep].fields;
     let isValid = true;
@@ -122,6 +135,7 @@ const ApplicationForm: React.FC = () => {
         }
       }
     }
+    
     if (isValid) {
       if (currentStep < steps.length - 1) {
         setCurrentStep(prev => prev + 1);
@@ -134,37 +148,17 @@ const ApplicationForm: React.FC = () => {
       toast.error('Please fill out all required fields correctly.');
     }
   };
+
   const handlePrevious = () => {
     setCurrentStep(prev => Math.max(0, prev - 1));
   };
-  return <div className="max-w-2xl mx-auto px-4 py-8">
-      {/* Progress Bar */}
-      <div className="mb-8">
-        <div className="flex justify-between mb-2">
-          {steps.map((_, index) => <div key={index} className={`flex-1 ${index < steps.length - 1 ? 'mr-2' : ''}`}>
-              <div className={`h-2 rounded-full ${index <= currentStep ? 'bg-blue-600' : 'bg-gray-200'}`} />
-            </div>)}
-        </div>
-        <div className="flex justify-between text-sm text-gray-600">
-          {steps.map((_, index) => <div key={index} className={`${index === currentStep ? 'text-blue-600 font-medium' : ''}`}>
-              Step {index + 1}
-            </div>)}
-        </div>
-      </div>
 
-      {/* Security Notice */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
-        <div className="flex items-start">
-          <Shield className="h-5 w-5 text-blue-600 mt-0.5 mr-2" />
-          <div>
-            <h4 className="text-sm font-medium text-blue-900">Secure Application</h4>
-            <p className="text-sm text-blue-700">
-              Your information is protected with bank-level security and encryption.
-            </p>
-          </div>
-        </div>
-      </div>
-
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-8">
+      <FormProgress steps={steps} currentStep={currentStep} />
+      
+      <SecurityNotice />
+      
       {/* Form Title */}
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
@@ -175,130 +169,63 @@ const ApplicationForm: React.FC = () => {
         </p>
       </div>
 
-      {/* Eligibility Requirements */}
-      {currentStep === 0 && <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-8">
-          <h3 className="font-medium mb-2">Eligibility Requirements</h3>
-          <ul className="text-sm text-gray-600 space-y-1">
-            <li>• Minimum $7,500 in unsecured debt</li>
-            <li>• Regular source of income</li>
-            <li>• US resident aged 18 or older</li>
-            <li>• Ability to make monthly program payments</li>
-          </ul>
-        </div>}
+      {/* Eligibility Requirements - only shown on first step */}
+      {currentStep === 0 && <EligibilityRequirements />}
 
       {/* Form Fields */}
       <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-        {currentStep === 0 && <>
-            <Input label="First Name" {...register('firstName')} error={errors.firstName?.message} />
-            <Input label="Last Name" {...register('lastName')} error={errors.lastName?.message} />
-            <Input label="Email" type="email" {...register('email')} error={errors.email?.message} />
-            <Input label="Phone" type="tel" {...register('phone')} error={errors.phone?.message} />
-          </>}
+        {currentStep === 0 && (
+          <BasicInfoStep register={register} errors={errors} />
+        )}
 
-        {currentStep === 1 && <>
-            <Input label="Total Debt Amount" type="number" {...register('debtAmount')} error={errors.debtAmount?.message} />
-            <Controller name="employmentStatus" control={control} render={({
-          field
-        }) => <Select label="Employment Status" options={[{
-          value: 'employed',
-          label: 'Employed'
-        }, {
-          value: 'self-employed',
-          label: 'Self-Employed'
-        }, {
-          value: 'unemployed',
-          label: 'Unemployed'
-        }, {
-          value: 'retired',
-          label: 'Retired'
-        }]} value={field.value} onChange={valueOrEvent => {
-          if (typeof valueOrEvent === 'string') {
-            field.onChange(valueOrEvent);
-          } else {
-            field.onChange(valueOrEvent.target.value);
-          }
-        }} error={errors.employmentStatus?.message} />} />
-            <Input label="Monthly Income" type="number" {...register('monthlyIncome')} error={errors.monthlyIncome?.message} />
-          </>}
+        {currentStep === 1 && (
+          <FinancialInfoStep 
+            register={register} 
+            control={control} 
+            errors={errors} 
+          />
+        )}
 
-        {currentStep === 2 && <>
-            <Input label="Address" {...register('address')} error={errors.address?.message} />
-            <Input label="Date of Birth" type="date" {...register('dateOfBirth')} error={errors.dateOfBirth?.message} />
-            <div className="relative">
-              <Input label="Last 4 Digits of SSN" type="password" {...register('ssnLastFour')} error={errors.ssnLastFour?.message} />
-              <div className="absolute right-0 top-0 mt-8 mr-3">
-                <AlertCircle className="h-5 w-5 text-gray-400" />
-              </div>
-            </div>
-          </>}
+        {currentStep === 2 && (
+          <AdditionalDetailsStep register={register} errors={errors} />
+        )}
 
-        {currentStep === 3 && <>
-            <div className="bg-gray-50 rounded-lg p-6 mb-6">
-              <h3 className="font-medium mb-4">Application Summary</h3>
-              <dl className="space-y-3">
-                <div className="grid grid-cols-2">
-                  <dt className="text-gray-600">Name:</dt>
-                  <dd>{watch('firstName')} {watch('lastName')}</dd>
-                </div>
-                <div className="grid grid-cols-2">
-                  <dt className="text-gray-600">Email:</dt>
-                  <dd>{watch('email')}</dd>
-                </div>
-                <div className="grid grid-cols-2">
-                  <dt className="text-gray-600">Phone:</dt>
-                  <dd>{watch('phone')}</dd>
-                </div>
-                <div className="grid grid-cols-2">
-                  <dt className="text-gray-600">Debt Amount:</dt>
-                  <dd>${watch('debtAmount')}</dd>
-                </div>
-                <div className="grid grid-cols-2">
-                  <dt className="text-gray-600">Employment Status:</dt>
-                  <dd>{watch('employmentStatus')}</dd>
-                </div>
-                <div className="grid grid-cols-2">
-                  <dt className="text-gray-600">Monthly Income:</dt>
-                  <dd>${watch('monthlyIncome')}</dd>
-                </div>
-                <div className="grid grid-cols-2">
-                  <dt className="text-gray-600">Address:</dt>
-                  <dd>{watch('address')}</dd>
-                </div>
-              </dl>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-start">
-                <input type="checkbox" {...register('agreeToTerms')} className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                <label className="ml-2 block text-sm text-gray-600">
-                  I agree to the terms and conditions and acknowledge that my information
-                  will be used in accordance with the privacy policy.
-                </label>
-              </div>
-              {errors.agreeToTerms && <p className="text-red-600 text-sm">{errors.agreeToTerms.message}</p>}
-            </div>
-          </>}
+        {currentStep === 3 && (
+          <ReviewSubmitStep 
+            watch={watch} 
+            register={register} 
+            errors={errors} 
+          />
+        )}
 
         {/* Navigation Buttons */}
         <div className="flex justify-between pt-6">
-          {currentStep > 0 && <Button type="button" variant="outline" onClick={handlePrevious} disabled={submitting}>
+          {currentStep > 0 && (
+            <button 
+              type="button" 
+              onClick={handlePrevious} 
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={submitting}
+            >
               Previous
-            </Button>}
+            </button>
+          )}
           
-          <Button type="button" variant="primary" onClick={handleNext} className={`${currentStep > 0 ? 'ml-auto' : ''}`} disabled={submitting}>
+          <button 
+            type="button" 
+            onClick={handleNext} 
+            className={`px-4 py-2 bg-blue-600 rounded-md text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 ${currentStep > 0 ? 'ml-auto' : ''}`}
+            disabled={submitting}
+          >
             {currentStep < steps.length - 1 ? 'Continue' : 'Submit Application'}
-          </Button>
+          </button>
         </div>
       </form>
 
       {/* Trust Indicators */}
-      <div className="mt-12 pt-8 border-t border-gray-200">
-        <div className="flex justify-center space-x-8">
-          <img alt="Forbes Advisor Badge" src="https://images.ctfassets.net/5xdc9rzhmhnq/2w76p4cNJtyPzBIB2ksKPF/aa2c8cde64b9ab878b081a8103a2f987/Wall_street_journal_logo.svg" className="h-20 object-contain" />
-          <img alt="Bankrate Certification" src="https://images.ctfassets.net/5xdc9rzhmhnq/5Lu8G1TwoxMc3Qu8cXSeV/c0b2d4eeeb3c79e961ef13aeb776c353/NDR-Badge-2025__1_-99-__3_.svg" className="h-20 object-contain" />
-          <img alt="BBB Accredited" src="https://start.nationaldebtrelief.com/_next/image?url=https%3A%2F%2Fimages.ctfassets.net%2F5xdc9rzhmhnq%2F5tJzAk64KVtKPW0nJifBB0%2Feec2e8a4260d5e08b7dafa41e80b06eb%2Fimage__9_.png%3Fw%3D120%26fm%3Dwebp%26fit%3Dfill&w=256&q=75" className="h-20 object-contain" />
-        </div>
-      </div>
-    </div>;
+      <TrustIndicators />
+    </div>
+  );
 };
+
 export default ApplicationForm;
