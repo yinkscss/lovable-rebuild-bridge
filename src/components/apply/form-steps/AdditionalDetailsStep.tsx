@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { UseFormRegister, FieldErrors, FieldError, FieldErrorsImpl, Merge } from 'react-hook-form';
+import { UseFormRegister, FieldErrors } from 'react-hook-form';
 import Input from '../../ui/Input';
 import { AlertCircle } from 'lucide-react';
 

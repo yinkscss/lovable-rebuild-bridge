@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { UseFormRegister, FieldErrors, FieldError, Merge, FieldErrorsImpl } from 'react-hook-form';
+import { UseFormRegister, FieldErrors } from 'react-hook-form';
 
 interface ReviewSubmitStepProps {
   watch: any;

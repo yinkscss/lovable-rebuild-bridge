@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { UseFormRegister, FieldErrors, Control, Controller, FieldError, FieldErrorsImpl, Merge } from 'react-hook-form';
+import { UseFormRegister, FieldErrors, Control, Controller } from 'react-hook-form';
 import Input from '../../ui/Input';
 import Select from '../../ui/Select';
 
