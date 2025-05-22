@@ -17,12 +17,6 @@ const FinancialInfoStep: React.FC<FinancialInfoStepProps> = ({
 }) => {
   return (
     <>
-      <Input 
-        label="Total Debt Amount" 
-        type="number" 
-        {...register('debtAmount')} 
-        error={errors.debtAmount} 
-      />
       <Controller 
         name="employmentStatus" 
         control={control} 
@@ -35,6 +29,7 @@ const FinancialInfoStep: React.FC<FinancialInfoStepProps> = ({
               { value: 'unemployed', label: 'Unemployed' },
               { value: 'retired', label: 'Retired' }
             ]} 
+            placeholder="Select your employment status"
             value={field.value} 
             onChange={valueOrEvent => {
               if (typeof valueOrEvent === 'string') {
@@ -50,6 +45,7 @@ const FinancialInfoStep: React.FC<FinancialInfoStepProps> = ({
       <Input 
         label="Monthly Income" 
         type="number" 
+        placeholder="Enter your monthly income"
         {...register('monthlyIncome')} 
         error={errors.monthlyIncome} 
       />

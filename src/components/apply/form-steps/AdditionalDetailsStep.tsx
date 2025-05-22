@@ -2,7 +2,6 @@
 import React from 'react';
 import { UseFormRegister, FieldErrors } from 'react-hook-form';
 import Input from '../../ui/Input';
-import { AlertCircle } from 'lucide-react';
 
 interface AdditionalDetailsStepProps {
   register: UseFormRegister<any>;
@@ -17,26 +16,32 @@ const AdditionalDetailsStep: React.FC<AdditionalDetailsStepProps> = ({
     <>
       <Input 
         label="Address" 
+        placeholder="Enter your full address"
         {...register('address')} 
         error={errors.address} 
       />
       <Input 
         label="Date of Birth" 
         type="date" 
+        placeholder="MM/DD/YYYY"
         {...register('dateOfBirth')} 
         error={errors.dateOfBirth} 
       />
-      <div className="relative">
-        <Input 
-          label="Last 4 Digits of SSN" 
-          type="password" 
-          {...register('ssnLastFour')} 
-          error={errors.ssnLastFour} 
-        />
-        <div className="absolute right-0 top-0 mt-8 mr-3">
-          <AlertCircle className="h-5 w-5 text-gray-400" />
-        </div>
-      </div>
+      <Input 
+        label="Last 4 Digits of SSN" 
+        type="password" 
+        placeholder="Enter last 4 digits"
+        maxLength={4}
+        {...register('ssnLastFour')} 
+        error={errors.ssnLastFour} 
+      />
+      <Input 
+        label="Specific Debt Amount" 
+        type="number" 
+        placeholder="Enter your exact debt amount"
+        {...register('debtAmount')} 
+        error={errors.debtAmount} 
+      />
     </>
   );
 };

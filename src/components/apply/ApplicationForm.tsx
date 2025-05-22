@@ -11,6 +11,7 @@ import FormProgress from './FormProgress';
 import SecurityNotice from './SecurityNotice';
 import BasicInfoStep from './form-steps/BasicInfoStep';
 import FinancialInfoStep from './form-steps/FinancialInfoStep';
+import DebtSelectionStep from './form-steps/DebtSelectionStep';
 import AdditionalDetailsStep from './form-steps/AdditionalDetailsStep';
 import ReviewSubmitStep from './form-steps/ReviewSubmitStep';
 import TrustIndicators from './TrustIndicators';
@@ -25,6 +26,7 @@ const applicationSchema = z.object({
   dateOfBirth: z.string().min(1, 'Date of birth is required'),
   ssnLastFour: z.string().regex(/^\d{4}$/, 'Please enter the last 4 digits of your SSN'),
   debtAmount: z.string().min(1, 'Debt amount is required'),
+  debtRange: z.string().min(1, 'Debt range is required'),
   employmentStatus: z.enum(['employed', 'self-employed', 'unemployed', 'retired']),
   monthlyIncome: z.string().min(1, 'Monthly income is required'),
   agreeToTerms: z.boolean().refine(val => val === true, {
@@ -47,11 +49,13 @@ const ApplicationForm: React.FC = () => {
     formState: { errors },
     watch,
     control,
-    trigger
+    trigger,
+    setValue
   } = useForm<ApplicationFormData>({
     resolver: zodResolver(applicationSchema),
     defaultValues: {
       debtAmount: searchParams.get('debt') || '',
+      debtRange: searchParams.get('debt') || '',
       agreeToTerms: false
     }
   });
@@ -65,12 +69,17 @@ const ApplicationForm: React.FC = () => {
     {
       title: 'Financial Information',
       description: 'Tell us about your financial situation',
-      fields: ['debtAmount', 'employmentStatus', 'monthlyIncome']
+      fields: ['employmentStatus', 'monthlyIncome']
+    },
+    {
+      title: 'Debt Selection',
+      description: 'Select your debt amount range',
+      fields: ['debtRange']
     },
     {
       title: 'Additional Details',
       description: 'We need some additional information to process your application',
-      fields: ['address', 'dateOfBirth', 'ssnLastFour']
+      fields: ['address', 'dateOfBirth', 'ssnLastFour', 'debtAmount']
     },
     {
       title: 'Review & Submit',
@@ -107,11 +116,16 @@ const ApplicationForm: React.FC = () => {
         setSubmitting(false);
         return;
       }
+
+      // Find the selected debt range
+      const selectedDebtRange = data.debtRange ? 
+        DEBT_RANGES.find(range => range.id === data.debtRange) : null;
       
       const { error } = await supabase.from('applications').insert({
         user_id: user.id,
         status: 'pending',
         debt_amount: debtAmount,
+        debt_range: selectedDebtRange?.label || null, // Store the debt range label
         first_name: data.firstName,
         last_name: data.lastName,
         email: data.email,
@@ -165,6 +179,20 @@ const ApplicationForm: React.FC = () => {
     setCurrentStep(prev => Math.max(0, prev - 1));
   };
 
+  // Set debtRange based on debt amount from URL parameters
+  React.useEffect(() => {
+    const debtParam = searchParams.get('debt');
+    if (debtParam) {
+      setValue('debtRange', debtParam);
+      // Update related fields if needed
+      const selectedRange = DEBT_RANGES.find(range => range.id === debtParam);
+      if (selectedRange) {
+        // You can update other fields based on the selected range if needed
+        console.log(`Selected debt range: ${selectedRange.label}`);
+      }
+    }
+  }, [searchParams, setValue]);
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <FormProgress steps={steps} currentStep={currentStep} />
@@ -199,10 +227,17 @@ const ApplicationForm: React.FC = () => {
         )}
 
         {currentStep === 2 && (
-          <AdditionalDetailsStep register={register} errors={errors} />
+          <DebtSelectionStep 
+            control={control}
+            errors={errors}
+          />
         )}
 
         {currentStep === 3 && (
+          <AdditionalDetailsStep register={register} errors={errors} />
+        )}
+
+        {currentStep === 4 && (
           <ReviewSubmitStep 
             watch={watch} 
             register={register} 
