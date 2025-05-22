@@ -37,9 +37,11 @@ export type Database = {
           date_of_birth: string | null
           debt_amount: number
           email: string
+          employment_status: string | null
           first_name: string
           id: string
           last_name: string
+          monthly_income: number | null
           phone: string
           ssn_last_four: string | null
           status: string
@@ -52,9 +54,11 @@ export type Database = {
           date_of_birth?: string | null
           debt_amount: number
           email: string
+          employment_status?: string | null
           first_name: string
           id?: string
           last_name: string
+          monthly_income?: number | null
           phone: string
           ssn_last_four?: string | null
           status?: string
@@ -67,9 +71,11 @@ export type Database = {
           date_of_birth?: string | null
           debt_amount?: number
           email?: string
+          employment_status?: string | null
           first_name?: string
           id?: string
           last_name?: string
+          monthly_income?: number | null
           phone?: string
           ssn_last_four?: string | null
           status?: string
