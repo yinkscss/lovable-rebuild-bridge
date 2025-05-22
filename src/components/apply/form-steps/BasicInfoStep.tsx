@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { UseFormRegister, FieldErrors } from 'react-hook-form';
+import { UseFormRegister, FieldErrors, FieldError, FieldErrorsImpl, Merge } from 'react-hook-form';
 import Input from '../../ui/Input';
 
 interface BasicInfoStepProps {
@@ -11,10 +11,10 @@ interface BasicInfoStepProps {
 const BasicInfoStep: React.FC<BasicInfoStepProps> = ({ register, errors }) => {
   return (
     <>
-      <Input label="First Name" {...register('firstName')} error={errors.firstName?.message} />
-      <Input label="Last Name" {...register('lastName')} error={errors.lastName?.message} />
-      <Input label="Email" type="email" {...register('email')} error={errors.email?.message} />
-      <Input label="Phone" type="tel" {...register('phone')} error={errors.phone?.message} />
+      <Input label="First Name" {...register('firstName')} error={errors.firstName} />
+      <Input label="Last Name" {...register('lastName')} error={errors.lastName} />
+      <Input label="Email" type="email" {...register('email')} error={errors.email} />
+      <Input label="Phone" type="tel" {...register('phone')} error={errors.phone} />
     </>
   );
 };

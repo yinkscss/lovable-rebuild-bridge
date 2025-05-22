@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { UseFormRegister, FieldErrors, Control, Controller } from 'react-hook-form';
+import { UseFormRegister, FieldErrors, Control, Controller, FieldError, FieldErrorsImpl, Merge } from 'react-hook-form';
 import Input from '../../ui/Input';
 import Select from '../../ui/Select';
 
@@ -21,7 +21,7 @@ const FinancialInfoStep: React.FC<FinancialInfoStepProps> = ({
         label="Total Debt Amount" 
         type="number" 
         {...register('debtAmount')} 
-        error={errors.debtAmount?.message} 
+        error={errors.debtAmount} 
       />
       <Controller 
         name="employmentStatus" 
@@ -43,7 +43,7 @@ const FinancialInfoStep: React.FC<FinancialInfoStepProps> = ({
                 field.onChange(valueOrEvent.target.value);
               }
             }} 
-            error={errors.employmentStatus?.message} 
+            error={errors.employmentStatus} 
           />
         )} 
       />
@@ -51,7 +51,7 @@ const FinancialInfoStep: React.FC<FinancialInfoStepProps> = ({
         label="Monthly Income" 
         type="number" 
         {...register('monthlyIncome')} 
-        error={errors.monthlyIncome?.message} 
+        error={errors.monthlyIncome} 
       />
     </>
   );

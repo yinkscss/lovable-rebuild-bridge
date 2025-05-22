@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { UseFormRegister, FieldErrors } from 'react-hook-form';
+import { UseFormRegister, FieldErrors, FieldError, Merge, FieldErrorsImpl } from 'react-hook-form';
 
 interface ReviewSubmitStepProps {
   watch: any;
@@ -62,7 +62,11 @@ const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({
           </label>
         </div>
         {errors.agreeToTerms && (
-          <p className="text-red-600 text-sm">{errors.agreeToTerms.message?.toString()}</p>
+          <p className="text-red-600 text-sm">
+            {typeof errors.agreeToTerms === 'object' && errors.agreeToTerms !== null && 'message' in errors.agreeToTerms 
+              ? String(errors.agreeToTerms.message) 
+              : String(errors.agreeToTerms)}
+          </p>
         )}
       </div>
     </>

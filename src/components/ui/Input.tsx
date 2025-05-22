@@ -1,9 +1,10 @@
 
 import React, { forwardRef } from 'react';
+import { FieldError, FieldErrorsImpl, Merge } from 'react-hook-form';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
-  error?: string | React.ReactNode;
+  error?: string | FieldError | Merge<FieldError, FieldErrorsImpl<any>> | React.ReactNode;
   fullWidth?: boolean;
 }
 

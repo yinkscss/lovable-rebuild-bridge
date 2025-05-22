@@ -1,5 +1,6 @@
 
 import React, { forwardRef } from 'react';
+import { FieldError, FieldErrorsImpl, Merge } from 'react-hook-form';
 
 interface SelectOption {
   value: string;
@@ -9,7 +10,7 @@ interface SelectOption {
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   options: SelectOption[];
-  error?: string | React.ReactNode;
+  error?: string | FieldError | Merge<FieldError, FieldErrorsImpl<any>> | React.ReactNode;
   fullWidth?: boolean;
   onChange?: (value: string | React.ChangeEvent<HTMLSelectElement>) => void;
   placeholder?: string;
