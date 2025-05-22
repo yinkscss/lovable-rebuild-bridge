@@ -45,7 +45,7 @@ const FinancialInfoStep: React.FC<FinancialInfoStepProps> = ({
       <Input 
         label="Monthly Income" 
         type="number" 
-        placeholder="Enter your monthly income"
+        placeholder="Enter monthly income (no symbols or commas)"
         {...register('monthlyIncome')} 
         error={errors.monthlyIncome} 
       />
