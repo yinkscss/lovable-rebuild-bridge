@@ -62,7 +62,7 @@ const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({
           </label>
         </div>
         {errors.agreeToTerms && (
-          <p className="text-red-600 text-sm">{errors.agreeToTerms.message}</p>
+          <p className="text-red-600 text-sm">{errors.agreeToTerms.message?.toString()}</p>
         )}
       </div>
     </>

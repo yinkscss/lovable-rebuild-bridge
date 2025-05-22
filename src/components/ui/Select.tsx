@@ -9,7 +9,7 @@ interface SelectOption {
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   options: SelectOption[];
-  error?: string;
+  error?: string | React.ReactNode;
   fullWidth?: boolean;
   onChange?: (value: string | React.ChangeEvent<HTMLSelectElement>) => void;
   placeholder?: string;
@@ -72,7 +72,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(({
           </svg>
         </div>
       </div>
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-600">{error.toString()}</p>}
     </div>
   );
 });
