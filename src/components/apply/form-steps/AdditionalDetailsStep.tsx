@@ -38,7 +38,7 @@ const AdditionalDetailsStep: React.FC<AdditionalDetailsStepProps> = ({
       <Input 
         label="Specific Debt Amount" 
         type="number" 
-        placeholder="Enter your exact debt amount"
+        placeholder="Enterdebt amount(no symbols or commas)"
         {...register('debtAmount')} 
         error={errors.debtAmount} 
       />
