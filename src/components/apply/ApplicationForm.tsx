@@ -46,7 +46,8 @@ const ApplicationForm: React.FC = () => {
     handleSubmit,
     formState: { errors },
     watch,
-    control
+    control,
+    trigger
   } = useForm<ApplicationFormData>({
     resolver: zodResolver(applicationSchema),
     defaultValues: {
@@ -82,10 +83,35 @@ const ApplicationForm: React.FC = () => {
     try {
       setSubmitting(true);
       console.log("Submitting application data:", data);
+      
+      // Check if user is authenticated
+      if (!user) {
+        toast.error('You need to be logged in to submit an application');
+        setSubmitting(false);
+        return;
+      }
+      
+      // Parse number values safely
+      const debtAmount = parseFloat(data.debtAmount.replace(/,/g, '')) || 0;
+      const monthlyIncome = parseFloat(data.monthlyIncome.replace(/,/g, '')) || 0;
+      
+      // Validate parsed values
+      if (isNaN(debtAmount) || debtAmount <= 0) {
+        toast.error('Invalid debt amount');
+        setSubmitting(false);
+        return;
+      }
+      
+      if (isNaN(monthlyIncome) || monthlyIncome < 0) {
+        toast.error('Invalid monthly income');
+        setSubmitting(false);
+        return;
+      }
+      
       const { error } = await supabase.from('applications').insert({
-        user_id: user?.id,
+        user_id: user.id,
         status: 'pending',
-        debt_amount: parseFloat(data.debtAmount),
+        debt_amount: debtAmount,
         first_name: data.firstName,
         last_name: data.lastName,
         email: data.email,
@@ -94,13 +120,15 @@ const ApplicationForm: React.FC = () => {
         date_of_birth: data.dateOfBirth,
         ssn_last_four: data.ssnLastFour,
         employment_status: data.employmentStatus,
-        monthly_income: parseFloat(data.monthlyIncome),
-        created_at: new Date().toISOString()
+        monthly_income: monthlyIncome,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       });
 
       if (error) {
         console.error('Error submitting application:', error);
         toast.error('Error submitting application: ' + error.message);
+        setSubmitting(false);
         throw error;
       }
 
@@ -110,31 +138,15 @@ const ApplicationForm: React.FC = () => {
     } catch (err) {
       console.error('Error submitting application:', err);
       toast.error('There was an error submitting your application. Please try again.');
-    } finally {
       setSubmitting(false);
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const currentFields = steps[currentStep].fields;
-    let isValid = true;
-
-    // Check if current step fields have errors
-    for (const field of currentFields) {
-      if (errors[field as keyof ApplicationFormData]) {
-        isValid = false;
-        break;
-      }
-
-      // Also check if required fields are filled
-      if (currentFields.includes(field) && field !== 'agreeToTerms') {
-        const value = watch(field as keyof ApplicationFormData);
-        if (!value || typeof value === 'string' && value.trim() === '') {
-          isValid = false;
-          break;
-        }
-      }
-    }
+    
+    // Validate the current step fields
+    const isValid = await trigger(currentFields as any);
     
     if (isValid) {
       if (currentStep < steps.length - 1) {
@@ -217,7 +229,7 @@ const ApplicationForm: React.FC = () => {
             className={`px-4 py-2 bg-blue-600 rounded-md text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 ${currentStep > 0 ? 'ml-auto' : ''}`}
             disabled={submitting}
           >
-            {currentStep < steps.length - 1 ? 'Continue' : 'Submit Application'}
+            {submitting ? 'Processing...' : currentStep < steps.length - 1 ? 'Continue' : 'Submit Application'}
           </button>
         </div>
       </form>

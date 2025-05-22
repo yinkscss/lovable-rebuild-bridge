@@ -46,6 +46,14 @@ const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({
             <dt className="text-gray-600">Address:</dt>
             <dd>{watch('address')}</dd>
           </div>
+          <div className="grid grid-cols-2">
+            <dt className="text-gray-600">Date of Birth:</dt>
+            <dd>{watch('dateOfBirth')}</dd>
+          </div>
+          <div className="grid grid-cols-2">
+            <dt className="text-gray-600">SSN (Last 4):</dt>
+            <dd>{watch('ssnLastFour')}</dd>
+          </div>
         </dl>
       </div>
 
@@ -53,10 +61,11 @@ const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({
         <div className="flex items-start">
           <input 
             type="checkbox" 
+            id="agreeToTerms"
             {...register('agreeToTerms')} 
             className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
           />
-          <label className="ml-2 block text-sm text-gray-600">
+          <label htmlFor="agreeToTerms" className="ml-2 block text-sm text-gray-600">
             I agree to the terms and conditions and acknowledge that my information
             will be used in accordance with the privacy policy.
           </label>
@@ -65,7 +74,7 @@ const ReviewSubmitStep: React.FC<ReviewSubmitStepProps> = ({
           <p className="text-red-600 text-sm">
             {typeof errors.agreeToTerms === 'object' && errors.agreeToTerms !== null && 'message' in errors.agreeToTerms 
               ? String(errors.agreeToTerms.message) 
-              : String(errors.agreeToTerms)}
+              : 'You must agree to the terms and conditions'}
           </p>
         )}
       </div>
