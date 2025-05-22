@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -7,6 +6,7 @@ import { z } from 'zod';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/auth';
 import { toast } from 'react-hot-toast';
+import { DEBT_RANGES } from '../../lib/constants';
 import FormProgress from './FormProgress';
 import SecurityNotice from './SecurityNotice';
 import BasicInfoStep from './form-steps/BasicInfoStep';
@@ -119,7 +119,7 @@ const ApplicationForm: React.FC = () => {
 
       // Find the selected debt range
       const selectedDebtRange = data.debtRange ? 
-        DEBT_RANGES.find(range => range.id === data.debtRange) : null;
+        DEBT_RANGES.find((range) => range.id === data.debtRange) : null;
       
       const { error } = await supabase.from('applications').insert({
         user_id: user.id,
@@ -185,7 +185,7 @@ const ApplicationForm: React.FC = () => {
     if (debtParam) {
       setValue('debtRange', debtParam);
       // Update related fields if needed
-      const selectedRange = DEBT_RANGES.find(range => range.id === debtParam);
+      const selectedRange = DEBT_RANGES.find((range) => range.id === debtParam);
       if (selectedRange) {
         // You can update other fields based on the selected range if needed
         console.log(`Selected debt range: ${selectedRange.label}`);
