@@ -34,6 +34,7 @@ export type Database = {
         Row: {
           address: string | null
           created_at: string | null
+          credit_score: string | null
           date_of_birth: string | null
           debt_amount: number
           debt_range: string | null
@@ -52,6 +53,7 @@ export type Database = {
         Insert: {
           address?: string | null
           created_at?: string | null
+          credit_score?: string | null
           date_of_birth?: string | null
           debt_amount: number
           debt_range?: string | null
@@ -70,6 +72,7 @@ export type Database = {
         Update: {
           address?: string | null
           created_at?: string | null
+          credit_score?: string | null
           date_of_birth?: string | null
           debt_amount?: number
           debt_range?: string | null

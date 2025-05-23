@@ -16,6 +16,7 @@ interface Application {
   ssn_last_four?: string;
   employment_status?: string;
   monthly_income?: number;
+  credit_score?: string;
   created_at: string;
   updated_at: string;
 }
@@ -37,6 +38,20 @@ const ApplicationsListItem: React.FC<ApplicationsListItemProps> = ({
   handleDecline,
   formatDate
 }) => {
+  // Format the credit score value for display
+  const formatCreditScore = (score?: string) => {
+    if (!score) return 'Not provided';
+    
+    const scoreMap: {[key: string]: string} = {
+      'excellent': 'Excellent (720-850)',
+      'good': 'Good (690-719)',
+      'fair': 'Fair (630-689)',
+      'poor': 'Poor (300-629)'
+    };
+    
+    return scoreMap[score] || score;
+  };
+
   return (
     <React.Fragment>
       <tr className="hover:bg-gray-50">
@@ -118,6 +133,7 @@ const ApplicationsListItem: React.FC<ApplicationsListItemProps> = ({
                   <p><span className="font-medium">Email:</span> {application.email}</p>
                   <p><span className="font-medium">Phone:</span> {application.phone}</p>
                   <p><span className="font-medium">Address:</span> {application.address || 'N/A'}</p>
+                  <p><span className="font-medium">Credit Score:</span> {formatCreditScore(application.credit_score)}</p>
                 </div>
                 <div>
                   <p><span className="font-medium">Debt Amount:</span> ${application.debt_amount}</p>

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -12,6 +13,7 @@ import SecurityNotice from './SecurityNotice';
 import BasicInfoStep from './form-steps/BasicInfoStep';
 import FinancialInfoStep from './form-steps/FinancialInfoStep';
 import DebtSelectionStep from './form-steps/DebtSelectionStep';
+import CreditScoreStep from './form-steps/CreditScoreStep';
 import AdditionalDetailsStep from './form-steps/AdditionalDetailsStep';
 import ReviewSubmitStep from './form-steps/ReviewSubmitStep';
 import TrustIndicators from './TrustIndicators';
@@ -27,6 +29,7 @@ const applicationSchema = z.object({
   ssnLastFour: z.string().regex(/^\d{4}$/, 'Please enter the last 4 digits of your SSN'),
   debtAmount: z.string().min(1, 'Debt amount is required'),
   debtRange: z.string().min(1, 'Debt range is required'),
+  creditScore: z.string().min(1, 'Credit score selection is required'),
   employmentStatus: z.enum(['employed', 'self-employed', 'unemployed', 'retired']),
   monthlyIncome: z.string().min(1, 'Monthly income is required'),
   agreeToTerms: z.boolean().refine(val => val === true, {
@@ -56,6 +59,7 @@ const ApplicationForm: React.FC = () => {
     defaultValues: {
       debtAmount: searchParams.get('debt') || '',
       debtRange: searchParams.get('debt') || '',
+      creditScore: '',
       agreeToTerms: false
     }
   });
@@ -65,6 +69,11 @@ const ApplicationForm: React.FC = () => {
       title: 'Basic Information',
       description: 'Let\'s start with your basic details',
       fields: ['firstName', 'lastName', 'email', 'phone']
+    },
+    {
+      title: 'Credit Score',
+      description: 'What\'s your current credit score?',
+      fields: ['creditScore']
     },
     {
       title: 'Financial Information',
@@ -125,7 +134,8 @@ const ApplicationForm: React.FC = () => {
         user_id: user.id,
         status: 'pending',
         debt_amount: debtAmount,
-        debt_range: selectedDebtRange?.label || null, // Store the debt range label
+        debt_range: selectedDebtRange?.label || null,
+        credit_score: data.creditScore,
         first_name: data.firstName,
         last_name: data.lastName,
         email: data.email,
@@ -219,6 +229,13 @@ const ApplicationForm: React.FC = () => {
         )}
 
         {currentStep === 1 && (
+          <CreditScoreStep 
+            control={control}
+            errors={errors}
+          />
+        )}
+
+        {currentStep === 2 && (
           <FinancialInfoStep 
             register={register} 
             control={control} 
@@ -226,18 +243,18 @@ const ApplicationForm: React.FC = () => {
           />
         )}
 
-        {currentStep === 2 && (
+        {currentStep === 3 && (
           <DebtSelectionStep 
             control={control}
             errors={errors}
           />
         )}
 
-        {currentStep === 3 && (
+        {currentStep === 4 && (
           <AdditionalDetailsStep register={register} errors={errors} />
         )}
 
-        {currentStep === 4 && (
+        {currentStep === 5 && (
           <ReviewSubmitStep 
             watch={watch} 
             register={register} 

@@ -56,6 +56,7 @@ export interface Application {
   ssn_last_four?: string;
   employment_status?: string;
   monthly_income?: number;
+  credit_score?: string;
   created_at: string;
   updated_at: string;
 }
