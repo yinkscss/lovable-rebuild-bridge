@@ -36,6 +36,7 @@ export type Database = {
           created_at: string | null
           date_of_birth: string | null
           debt_amount: number
+          debt_range: string | null
           email: string
           employment_status: string | null
           first_name: string
@@ -53,6 +54,7 @@ export type Database = {
           created_at?: string | null
           date_of_birth?: string | null
           debt_amount: number
+          debt_range?: string | null
           email: string
           employment_status?: string | null
           first_name: string
@@ -70,6 +72,7 @@ export type Database = {
           created_at?: string | null
           date_of_birth?: string | null
           debt_amount?: number
+          debt_range?: string | null
           email?: string
           employment_status?: string | null
           first_name?: string

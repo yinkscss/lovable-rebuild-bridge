@@ -1,13 +1,16 @@
+
 import React, { useState } from 'react';
-import { ArrowRight, Check } from 'lucide-react';
+import { ArrowRight, Check, CreditCard } from 'lucide-react';
 import { DEBT_RANGES, VALUE_PROPS } from '../../lib/constants';
 import Select from '../ui/Select';
 import Button from '../ui/Button';
 import { useNavigate } from 'react-router-dom';
+
 const DebtCalculator: React.FC = () => {
   const [debtAmount, setDebtAmount] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!debtAmount) {
@@ -18,6 +21,7 @@ const DebtCalculator: React.FC = () => {
     // Navigate to application page with selected debt amount
     navigate(`/apply?debt=${debtAmount}`);
   };
+
   const handleDebtAmountChange = (valueOrEvent: string | React.ChangeEvent<HTMLSelectElement>) => {
     if (typeof valueOrEvent === 'string') {
       setDebtAmount(valueOrEvent);
@@ -25,8 +29,40 @@ const DebtCalculator: React.FC = () => {
       setDebtAmount(valueOrEvent.target.value);
     }
   };
+
   return <section className="bg-white py-16">
       <div className="container mx-auto px-4">
+        <nav className="max-w-4xl mx-auto mb-10 overflow-x-auto">
+          <ul className="flex justify-between min-w-full border-b">
+            <li className="flex-1 text-center">
+              <a href="#" className="flex flex-col items-center justify-center py-3 px-4 text-blue-500 border-b-2 border-blue-500 font-medium text-sm transition-colors hover:text-blue-600">
+                <CreditCard className="h-5 w-5 mb-1" />
+                <span>Credit Cards</span>
+              </a>
+            </li>
+            <li className="flex-1 text-center">
+              <a href="#" className="flex flex-col items-center justify-center py-3 px-4 text-gray-600 font-medium text-sm transition-colors hover:text-blue-500 hover:border-blue-500">
+                <span>Insurance</span>
+              </a>
+            </li>
+            <li className="flex-1 text-center">
+              <a href="#" className="flex flex-col items-center justify-center py-3 px-4 text-gray-600 font-medium text-sm transition-colors hover:text-blue-500 hover:border-blue-500">
+                <span>Mortgages</span>
+              </a>
+            </li>
+            <li className="flex-1 text-center">
+              <a href="#" className="flex flex-col items-center justify-center py-3 px-4 text-gray-600 font-medium text-sm transition-colors hover:text-blue-500 hover:border-blue-500">
+                <span>Personal Loans</span>
+              </a>
+            </li>
+            <li className="flex-1 text-center">
+              <a href="#" className="flex flex-col items-center justify-center py-3 px-4 text-gray-600 font-medium text-sm transition-colors hover:text-blue-500 hover:border-blue-500">
+                <span>Student Loan</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+        
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
             See If You Qualify For Debt Relief
@@ -61,4 +97,5 @@ const DebtCalculator: React.FC = () => {
       </div>
     </section>;
 };
+
 export default DebtCalculator;
