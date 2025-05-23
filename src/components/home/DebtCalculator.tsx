@@ -1,14 +1,15 @@
 
 import React, { useState } from 'react';
-import { ArrowRight, Check, CreditCard } from 'lucide-react';
+import { ArrowRight, Check, CreditCard, Shield, Home, Briefcase, GraduationCap } from 'lucide-react';
 import { DEBT_RANGES, VALUE_PROPS } from '../../lib/constants';
 import Select from '../ui/Select';
 import Button from '../ui/Button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const DebtCalculator: React.FC = () => {
   const [debtAmount, setDebtAmount] = useState('');
   const [error, setError] = useState('');
+  const [activeCategory, setActiveCategory] = useState('credit-cards');
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -30,36 +31,38 @@ const DebtCalculator: React.FC = () => {
     }
   };
 
+  const navItems = [
+    { id: 'credit-cards', label: 'Credit Cards', icon: <CreditCard className="h-5 w-5 mb-1" /> },
+    { id: 'insurance', label: 'Insurance', icon: <Shield className="h-5 w-5 mb-1" /> },
+    { id: 'mortgages', label: 'Mortgages', icon: <Home className="h-5 w-5 mb-1" /> },
+    { id: 'personal-loans', label: 'Personal Loans', icon: <Briefcase className="h-5 w-5 mb-1" /> },
+    { id: 'student-loans', label: 'Student Loans', icon: <GraduationCap className="h-5 w-5 mb-1" /> },
+  ];
+
   return <section className="bg-white py-16">
       <div className="container mx-auto px-4">
         <nav className="max-w-4xl mx-auto mb-10 overflow-x-auto">
           <ul className="flex justify-between min-w-full border-b">
-            <li className="flex-1 text-center">
-              <a href="#" className="flex flex-col items-center justify-center py-3 px-4 text-blue-500 border-b-2 border-blue-500 font-medium text-sm transition-colors hover:text-blue-600">
-                <CreditCard className="h-5 w-5 mb-1" />
-                <span>Credit Cards</span>
-              </a>
-            </li>
-            <li className="flex-1 text-center">
-              <a href="#" className="flex flex-col items-center justify-center py-3 px-4 text-gray-600 font-medium text-sm transition-colors hover:text-blue-500 hover:border-blue-500">
-                <span>Insurance</span>
-              </a>
-            </li>
-            <li className="flex-1 text-center">
-              <a href="#" className="flex flex-col items-center justify-center py-3 px-4 text-gray-600 font-medium text-sm transition-colors hover:text-blue-500 hover:border-blue-500">
-                <span>Mortgages</span>
-              </a>
-            </li>
-            <li className="flex-1 text-center">
-              <a href="#" className="flex flex-col items-center justify-center py-3 px-4 text-gray-600 font-medium text-sm transition-colors hover:text-blue-500 hover:border-blue-500">
-                <span>Personal Loans</span>
-              </a>
-            </li>
-            <li className="flex-1 text-center">
-              <a href="#" className="flex flex-col items-center justify-center py-3 px-4 text-gray-600 font-medium text-sm transition-colors hover:text-blue-500 hover:border-blue-500">
-                <span>Student Loan</span>
-              </a>
-            </li>
+            {navItems.map((item) => (
+              <li key={item.id} className="flex-1 text-center">
+                <Link 
+                  to={`/apply?category=${item.id}`} 
+                  className={`
+                    flex flex-col items-center justify-center py-3 px-4 
+                    transition-all duration-200 
+                    ${activeCategory === item.id 
+                      ? 'text-blue-600 border-b-2 border-blue-500 font-medium' 
+                      : 'text-gray-600 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-50'
+                    }
+                    rounded-t-md text-sm
+                  `}
+                  onClick={() => setActiveCategory(item.id)}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </Link>
+              </li>
+            ))}
           </ul>
         </nav>
         
