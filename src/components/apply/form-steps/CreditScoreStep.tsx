@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Controller } from 'react-hook-form';
-import { Check, Star } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { Card } from '../../../components/ui/Card';
 
 const creditScoreRanges = [
