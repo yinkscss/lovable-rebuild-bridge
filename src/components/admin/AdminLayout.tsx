@@ -1,11 +1,16 @@
+
 import React, { useState } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { FileText, CreditCard, Users, Settings, LogOut, Menu, X } from 'lucide-react';
 import Logo from '../layout/Logo';
+import { useAuth } from '../../lib/auth';
+import { toast } from 'react-hot-toast';
 
 const AdminLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -13,6 +18,17 @@ const AdminLayout: React.FC = () => {
 
   const closeSidebar = () => {
     setSidebarOpen(false);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/');
+      toast.success('Signed out successfully');
+    } catch (error) {
+      console.error('Error signing out:', error);
+      toast.error('Failed to sign out');
+    }
   };
 
   const isActive = (path: string) => {
@@ -71,13 +87,13 @@ const AdminLayout: React.FC = () => {
               ))}
             </nav>
             <div className="px-2 py-4 border-t border-blue-800">
-              <Link
-                to="/logout"
-                className="flex items-center px-4 py-3 text-sm font-medium text-blue-100 rounded-md hover:bg-blue-800 hover:text-white"
+              <button
+                onClick={handleSignOut}
+                className="flex items-center w-full px-4 py-3 text-sm font-medium text-blue-100 rounded-md hover:bg-blue-800 hover:text-white"
               >
                 <LogOut className="h-5 w-5" />
                 <span className="ml-3">Logout</span>
-              </Link>
+              </button>
             </div>
           </div>
         </div>
@@ -126,14 +142,16 @@ const AdminLayout: React.FC = () => {
             ))}
           </nav>
           <div className="px-2 py-4 border-t border-blue-800">
-            <Link
-              to="/logout"
-              onClick={closeSidebar}
-              className="flex items-center px-4 py-3 text-sm font-medium text-blue-100 rounded-md hover:bg-blue-800 hover:text-white"
+            <button
+              onClick={() => {
+                handleSignOut();
+                closeSidebar();
+              }}
+              className="flex items-center w-full px-4 py-3 text-sm font-medium text-blue-100 rounded-md hover:bg-blue-800 hover:text-white"
             >
               <LogOut className="h-5 w-5" />
               <span className="ml-3">Logout</span>
-            </Link>
+            </button>
           </div>
         </div>
       </div>
