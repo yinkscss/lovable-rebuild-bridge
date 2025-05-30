@@ -1,6 +1,7 @@
 import { DebtRange, Testimonial } from '../types';
 
-export const COMPANY_PHONE = '800-300-9550';
+export const COMPANY_PHONE = '+4102584893';
+export const COMPANY_EMAIL = 'info@nationadebtsrelief.com';
 
 export const DEBT_RANGES: DebtRange[] = [
   { id: '1', label: '$7,500 - $10,000', min: 7500, max: 10000 },

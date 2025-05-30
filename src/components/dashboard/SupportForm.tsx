@@ -1,6 +1,6 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '../../lib/auth';
+import { COMPANY_PHONE } from '../../lib/constants';
 // Removed unused supabase import
 import Input from '../ui/Input';
 import Button from '../ui/Button';
@@ -78,7 +78,7 @@ const SupportForm: React.FC = () => {
         <p className="mt-2 text-sm text-gray-600">
           If you need immediate assistance, please call our customer support team at:
         </p>
-        <p className="mt-1 text-base font-medium">1-800-123-4567</p>
+        <p className="mt-1 text-base font-medium">{COMPANY_PHONE}</p>
         <p className="mt-4 text-sm text-gray-600">
           Business hours: Monday-Friday, 9am-6pm EST
         </p>

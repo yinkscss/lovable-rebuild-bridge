@@ -1,14 +1,18 @@
+
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { NAV_ITEMS, COMPANY_PHONE } from '../../lib/constants';
+import { NAV_ITEMS, COMPANY_PHONE, COMPANY_EMAIL } from '../../lib/constants';
 import Logo from './Logo';
 import { Phone, Mail, Facebook, Twitter, Instagram, Linkedin, Lock } from 'lucide-react';
+
 const Footer: React.FC = () => {
   const navigate = useNavigate();
   const handleAdminClick = () => {
     navigate('/admin/auth');
   };
-  return <footer className="bg-gray-900 text-white">
+  
+  return (
+    <footer className="bg-gray-900 text-white">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Information */}
@@ -19,14 +23,14 @@ const Footer: React.FC = () => {
             </p>
             <div className="flex items-center mb-2">
               <Phone className="h-4 w-4 mr-2 text-gray-400" />
-              <a href={`tel:${COMPANY_PHONE.replace(/-/g, '')}`} className="text-gray-300 hover:text-white">
+              <a href={`tel:${COMPANY_PHONE}`} className="text-gray-300 hover:text-white">
                 {COMPANY_PHONE}
               </a>
             </div>
             <div className="flex items-center">
               <Mail className="h-4 w-4 mr-2 text-gray-400" />
-              <a href="mailto:info@nationaldebtrelief.com" className="text-gray-300 hover:text-white">
-                info@nationaldebtrelief.com
+              <a href={`mailto:${COMPANY_EMAIL}`} className="text-gray-300 hover:text-white">
+                {COMPANY_EMAIL}
               </a>
             </div>
           </div>
@@ -132,6 +136,8 @@ const Footer: React.FC = () => {
           </p>
         </div>
       </div>
-    </footer>;
+    </footer>
+  );
 };
+
 export default Footer;
