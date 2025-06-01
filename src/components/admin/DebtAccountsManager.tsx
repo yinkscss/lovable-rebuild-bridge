@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'react-hot-toast';
-import { Edit, Save, X, Plus, Trash2 } from 'lucide-react';
+import { Edit, Save, X, Trash2 } from 'lucide-react';
 import Input from '../ui/Input';
 import Select from '../ui/Select';
 import Button from '../ui/Button';
@@ -37,7 +37,6 @@ const ACCOUNT_TYPES = [
 
 const OPEN_CLOSED_OPTIONS = ['Open', 'Closed'];
 const STATUS_OPTIONS = ['Current', 'Late', 'Charged Off', 'Collection', 'Settled', 'Paid'];
-const PAYMENT_FREQUENCY_OPTIONS = ['Monthly', 'Weekly', 'Bi-Weekly', 'Quarterly'];
 
 const DebtAccountsManager: React.FC<DebtAccountsManagerProps> = ({ applicationId, readonly = false }) => {
   const [debtAccounts, setDebtAccounts] = useState<DebtAccount[]>([]);
