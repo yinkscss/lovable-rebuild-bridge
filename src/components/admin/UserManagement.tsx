@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'react-hot-toast';
@@ -8,15 +7,11 @@ import Input from '../ui/Input';
 import Select from '../ui/Select';
 import { 
   Search, 
-  Filter, 
-  UserPlus, 
   Mail, 
   Phone, 
   Calendar, 
   Edit, 
   Trash2, 
-  Eye,
-  MoreHorizontal,
   Download
 } from 'lucide-react';
 
@@ -85,7 +80,7 @@ const UserManagement: React.FC = () => {
           last_name: profile?.last_name || authUser.user_metadata?.last_name || '',
           phone: profile?.phone || authUser.user_metadata?.phone || '',
           created_at: authUser.created_at,
-          updated_at: authUser.updated_at,
+          updated_at: authUser.updated_at || authUser.created_at,
           last_sign_in_at: authUser.last_sign_in_at,
           email_confirmed_at: authUser.email_confirmed_at
         };

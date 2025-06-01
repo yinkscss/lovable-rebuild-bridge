@@ -1,10 +1,8 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './lib/auth';
 import HomePage from './pages/HomePage';
 import ApplyPage from './pages/ApplyPage';
-import ApplicationSuccessPage from './pages/ApplicationSuccessPage';
 import AboutUsPage from './pages/AboutUsPage';
 import HowItWorksPage from './pages/HowItWorksPage';
 import ResourcesPage from './pages/ResourcesPage';

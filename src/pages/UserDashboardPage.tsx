@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
@@ -17,7 +16,6 @@ import {
   Clock, 
   AlertCircle,
   Phone,
-  Mail,
   FileText,
   CreditCard
 } from 'lucide-react';
@@ -116,10 +114,6 @@ const UserDashboardPage: React.FC = () => {
       supabase.removeChannel(channel);
     };
   }, [user, navigate]);
-
-  const calculateTotalDebt = () => {
-    return debtAccounts.reduce((total, account) => total + (account.current_balance || 0), 0);
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
