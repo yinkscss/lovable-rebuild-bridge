@@ -145,6 +145,11 @@ const DebtAccountsManager: React.FC<DebtAccountsManagerProps> = ({ applicationId
     return new Date(dateString).toLocaleDateString();
   };
 
+  const handleSelectChange = (field: keyof DebtAccount) => (value: string | React.ChangeEvent<HTMLSelectElement>) => {
+    const stringValue = typeof value === 'string' ? value : value.target.value;
+    setEditForm({...editForm, [field]: stringValue});
+  };
+
   if (loading) {
     return (
       <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -204,7 +209,7 @@ const DebtAccountsManager: React.FC<DebtAccountsManagerProps> = ({ applicationId
                       label="Account Type"
                       options={ACCOUNT_TYPES.map(type => ({ value: type, label: type }))}
                       value={editForm.account_type || ''}
-                      onChange={(value) => setEditForm({...editForm, account_type: value})}
+                      onChange={handleSelectChange('account_type')}
                     />
                     
                     <Input
@@ -227,14 +232,14 @@ const DebtAccountsManager: React.FC<DebtAccountsManagerProps> = ({ applicationId
                       label="Status"
                       options={STATUS_OPTIONS.map(status => ({ value: status, label: status }))}
                       value={editForm.status || ''}
-                      onChange={(value) => setEditForm({...editForm, status: value})}
+                      onChange={handleSelectChange('status')}
                     />
                     
                     <Select
                       label="Open/Closed"
                       options={OPEN_CLOSED_OPTIONS.map(option => ({ value: option, label: option }))}
                       value={editForm.open_closed || ''}
-                      onChange={(value) => setEditForm({...editForm, open_closed: value})}
+                      onChange={handleSelectChange('open_closed')}
                     />
                   </div>
 
