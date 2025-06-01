@@ -14,6 +14,8 @@ import AdminLayout from './components/admin/AdminLayout';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import ApplicationsPage from './pages/admin/ApplicationsPage';
 import PaymentsPage from './pages/admin/PaymentsPage';
+import UserManagementPage from './pages/admin/UserManagementPage';
+import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 import UserDashboardPage from './pages/UserDashboardPage';
 import AuthPage from './pages/AuthPage';
 import { useAuth } from './lib/auth';
@@ -63,7 +65,11 @@ function App() {
           {/* Public routes */}
           <Route path="/" element={<HomePage />} />
           <Route path="/apply" element={<ApplyPage />} />
-          <Route path="/apply/success" element={<ApplicationSuccessPage />} />
+          <Route path="/apply/success" element={
+            <PrivateRoute>
+              <Navigate to="/dashboard" replace />
+            </PrivateRoute>
+          } />
           <Route path="/how-it-works" element={<HowItWorksPage />} />
           <Route path="/about-us" element={<AboutUsPage />} />
           <Route path="/resources" element={<ResourcesPage />} />
@@ -99,6 +105,8 @@ function App() {
             <Route path="dashboard" element={<AdminDashboardPage />} />
             <Route path="applications" element={<ApplicationsPage />} />
             <Route path="payments" element={<PaymentsPage />} />
+            <Route path="users" element={<UserManagementPage />} />
+            <Route path="settings" element={<AdminSettingsPage />} />
           </Route>
 
           {/* 404 route */}
