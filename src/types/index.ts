@@ -1,4 +1,3 @@
-
 export interface Testimonial {
   id: string;
   name: string;
@@ -27,11 +26,32 @@ export interface ApplicationFormData {
   address?: string;
   dateOfBirth?: string;
   lastFourSSN?: string;
+  debtAccounts?: DebtAccount[];
   familyMembers?: {
     firstName: string;
     lastName: string;
     dateOfBirth: string;
   }[];
+}
+
+export interface DebtAccount {
+  id?: string;
+  applicationId?: string;
+  originalCreditor: string;
+  accountSold: boolean;
+  accountType: string;
+  dateOpened?: string;
+  openClosed?: string;
+  status?: string;
+  currentBalance: number;
+  lastPaymentDate?: string;
+  paidOff: boolean;
+  paymentFrequency?: string;
+  paymentAmount?: number;
+  originalBalance?: number;
+  term?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ApplicationStatus {
@@ -51,6 +71,7 @@ export interface Application {
   email: string;
   phone: string;
   debt_amount: number;
+  debt_range?: string;
   address?: string;
   date_of_birth?: string;
   ssn_last_four?: string;
@@ -59,6 +80,7 @@ export interface Application {
   credit_score?: string;
   created_at: string;
   updated_at: string;
+  debt_accounts?: DebtAccount[];
 }
 
 export interface PaymentMethod {

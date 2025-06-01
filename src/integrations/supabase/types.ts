@@ -142,6 +142,74 @@ export type Database = {
           },
         ]
       }
+      debt_accounts: {
+        Row: {
+          account_sold: boolean | null
+          account_type: string
+          application_id: string | null
+          created_at: string | null
+          current_balance: number
+          date_opened: string | null
+          id: string
+          last_payment_date: string | null
+          open_closed: string | null
+          original_balance: number | null
+          original_creditor: string
+          paid_off: boolean | null
+          payment_amount: number | null
+          payment_frequency: string | null
+          status: string | null
+          term: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          account_sold?: boolean | null
+          account_type: string
+          application_id?: string | null
+          created_at?: string | null
+          current_balance?: number
+          date_opened?: string | null
+          id?: string
+          last_payment_date?: string | null
+          open_closed?: string | null
+          original_balance?: number | null
+          original_creditor: string
+          paid_off?: boolean | null
+          payment_amount?: number | null
+          payment_frequency?: string | null
+          status?: string | null
+          term?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          account_sold?: boolean | null
+          account_type?: string
+          application_id?: string | null
+          created_at?: string | null
+          current_balance?: number
+          date_opened?: string | null
+          id?: string
+          last_payment_date?: string | null
+          open_closed?: string | null
+          original_balance?: number | null
+          original_creditor?: string
+          paid_off?: boolean | null
+          payment_amount?: number | null
+          payment_frequency?: string | null
+          status?: string | null
+          term?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "debt_accounts_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       family_members: {
         Row: {
           application_id: string | null
