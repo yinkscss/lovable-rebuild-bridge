@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'react-hot-toast';
@@ -12,7 +13,9 @@ import {
   Calendar, 
   Edit, 
   Trash2, 
-  Download
+  Download,
+  AlertCircle,
+  Users
 } from 'lucide-react';
 
 interface User {
@@ -42,6 +45,7 @@ const UserManagement: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'pending' | 'approved' | 'declined'>('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [adminError, setAdminError] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({
     first_name: '',
     last_name: '',
@@ -57,41 +61,86 @@ const UserManagement: React.FC = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      setAdminError(null);
       
-      // Fetch users from auth.users via the admin API
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      // First try to fetch from auth.users (requires admin privileges)
+      try {
+        const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+        
+        if (authError) {
+          if (authError.message === 'User not allowed' || authError.status === 403) {
+            // Fallback to public users table if admin access is not available
+            await fetchUsersFromPublicTable();
+            return;
+          }
+          throw authError;
+        }
+
+        // If we have admin access, merge with profile data
+        const { data: profileUsers, error: profileError } = await supabase
+          .from('users')
+          .select('*');
+
+        if (profileError) throw profileError;
+
+        const mergedUsers = authUsers.users.map(authUser => {
+          const profile = profileUsers.find(p => p.id === authUser.id);
+          return {
+            id: authUser.id,
+            email: authUser.email || '',
+            first_name: profile?.first_name || authUser.user_metadata?.first_name || '',
+            last_name: profile?.last_name || authUser.user_metadata?.last_name || '',
+            phone: profile?.phone || authUser.user_metadata?.phone || '',
+            created_at: authUser.created_at,
+            updated_at: authUser.updated_at || authUser.created_at,
+            last_sign_in_at: authUser.last_sign_in_at,
+            email_confirmed_at: authUser.email_confirmed_at
+          };
+        });
+
+        setUsers(mergedUsers);
+        
+      } catch (adminError) {
+        console.log('Admin access not available, falling back to public table');
+        await fetchUsersFromPublicTable();
+      }
       
-      if (authError) throw authError;
-
-      // Fetch additional profile data from public.users
-      const { data: profileUsers, error: profileError } = await supabase
-        .from('users')
-        .select('*');
-
-      if (profileError) throw profileError;
-
-      // Merge auth data with profile data
-      const mergedUsers = authUsers.users.map(authUser => {
-        const profile = profileUsers.find(p => p.id === authUser.id);
-        return {
-          id: authUser.id,
-          email: authUser.email || '',
-          first_name: profile?.first_name || authUser.user_metadata?.first_name || '',
-          last_name: profile?.last_name || authUser.user_metadata?.last_name || '',
-          phone: profile?.phone || authUser.user_metadata?.phone || '',
-          created_at: authUser.created_at,
-          updated_at: authUser.updated_at || authUser.created_at,
-          last_sign_in_at: authUser.last_sign_in_at,
-          email_confirmed_at: authUser.email_confirmed_at
-        };
-      });
-
-      setUsers(mergedUsers);
     } catch (error) {
       console.error('Error fetching users:', error);
+      setAdminError('Failed to load users. You may not have the necessary permissions.');
       toast.error('Failed to load users');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUsersFromPublicTable = async () => {
+    try {
+      const { data: publicUsers, error } = await supabase
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedUsers = (publicUsers || []).map(user => ({
+        id: user.id,
+        email: user.email || '',
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
+        phone: user.phone || '',
+        created_at: user.created_at,
+        updated_at: user.updated_at || user.created_at,
+        last_sign_in_at: undefined,
+        email_confirmed_at: user.created_at // Assume confirmed if in public table
+      }));
+
+      setUsers(formattedUsers);
+      setAdminError('Limited view: Showing users from public database only. Admin privileges required for full user management.');
+      
+    } catch (error) {
+      console.error('Error fetching from public users table:', error);
+      throw error;
     }
   };
 
@@ -103,7 +152,6 @@ const UserManagement: React.FC = () => {
 
       if (error) throw error;
 
-      // Create a map of user_id to application
       const appMap: { [key: string]: Application } = {};
       data?.forEach(app => {
         if (app.user_id) {
@@ -146,20 +194,26 @@ const UserManagement: React.FC = () => {
 
       if (profileError) throw profileError;
 
-      // Update auth user if email changed
-      if (editForm.email !== selectedUser.email) {
-        const { error: authError } = await supabase.auth.admin.updateUserById(
-          selectedUser.id,
-          {
-            email: editForm.email,
-            user_metadata: {
-              first_name: editForm.first_name,
-              last_name: editForm.last_name
+      // Try to update auth user if possible (requires admin privileges)
+      try {
+        if (editForm.email !== selectedUser.email) {
+          const { error: authError } = await supabase.auth.admin.updateUserById(
+            selectedUser.id,
+            {
+              email: editForm.email,
+              user_metadata: {
+                first_name: editForm.first_name,
+                last_name: editForm.last_name
+              }
             }
-          }
-        );
+          );
 
-        if (authError) throw authError;
+          if (authError && authError.status !== 403) {
+            throw authError;
+          }
+        }
+      } catch (authError) {
+        console.log('Auth update failed (may not have admin privileges):', authError);
       }
 
       toast.success('User updated successfully');
@@ -177,9 +231,23 @@ const UserManagement: React.FC = () => {
     }
 
     try {
-      // Delete from auth
-      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
-      if (authError) throw authError;
+      // Try to delete from auth first (requires admin privileges)
+      try {
+        const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+        if (authError && authError.status !== 403) {
+          throw authError;
+        }
+      } catch (authError) {
+        console.log('Auth deletion failed (may not have admin privileges):', authError);
+      }
+
+      // Delete from public users table
+      const { error: publicError } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', userId);
+
+      if (publicError) throw publicError;
 
       toast.success('User deleted successfully');
       fetchUsers();
@@ -264,7 +332,10 @@ const UserManagement: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+            <Users className="h-6 w-6 mr-3 text-blue-600" />
+            User Management
+          </h2>
           <p className="mt-1 text-gray-600">Manage user accounts and monitor application status</p>
         </div>
         <Button onClick={exportUsers} variant="outline" className="mt-4 md:mt-0">
@@ -272,6 +343,19 @@ const UserManagement: React.FC = () => {
           Export Users
         </Button>
       </div>
+
+      {/* Admin Error Warning */}
+      {adminError && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-start">
+            <AlertCircle className="h-5 w-5 text-yellow-400 mt-0.5 mr-3 flex-shrink-0" />
+            <div>
+              <h3 className="text-sm font-medium text-yellow-800">Limited Access</h3>
+              <p className="text-sm text-yellow-700 mt-1">{adminError}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <Card className="p-6">
