@@ -5,62 +5,80 @@ import { Check, Clock, X, AlertTriangle, FileText, Users, DollarSign } from 'luc
 interface ApplicationStatusProps {
   application: {
     status: 'pending' | 'approved' | 'declined';
+    enrollment_status?: 'pending' | 'approved' | 'declined';
+    enrollment_approved_at?: string;
+    negotiations_status?: 'pending' | 'approved' | 'declined';
+    negotiations_approved_at?: string;
     created_at: string;
     updated_at: string;
   };
 }
 
 const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ application }) => {
-  const stages = [
-    { 
-      id: 'submitted', 
-      label: 'Application Submitted', 
-      description: 'Your application has been received and is in our system',
-      completed: true,
-      date: new Date(application.created_at).toLocaleDateString(),
-      estimatedDays: 0
-    },
-    { 
-      id: 'review', 
-      label: 'Document Review', 
-      description: 'Our specialists are reviewing your financial documents',
-      completed: application.status !== 'pending' || new Date().getTime() - new Date(application.created_at).getTime() > 86400000, // 1 day
-      date: application.status !== 'pending' ? new Date(application.updated_at).toLocaleDateString() : '',
-      estimatedDays: 1
-    },
-    { 
-      id: 'qualification', 
-      label: 'Qualification Assessment', 
-      description: 'Determining your eligibility for our debt relief program',
-      completed: application.status === 'approved',
-      date: application.status === 'approved' ? new Date(application.updated_at).toLocaleDateString() : '',
-      estimatedDays: 3
-    },
-    { 
-      id: 'approval', 
-      label: 'Final Approval', 
-      description: 'Application approved and ready for enrollment',
-      completed: application.status === 'approved',
-      date: application.status === 'approved' ? new Date(application.updated_at).toLocaleDateString() : '',
-      estimatedDays: 5
-    },
-    { 
-      id: 'enrollment', 
-      label: 'Program Enrollment', 
-      description: 'Welcome call and program setup',
-      completed: false,
-      date: '',
-      estimatedDays: 7
-    },
-    { 
-      id: 'negotiations', 
-      label: 'Creditor Negotiations', 
-      description: 'Active negotiations with your creditors begin',
-      completed: false,
-      date: '',
-      estimatedDays: 30
+  const getStages = () => {
+    const baseStages = [
+      { 
+        id: 'submitted', 
+        label: 'Application Submitted', 
+        description: 'Your application has been received and is in our system',
+        completed: true,
+        date: new Date(application.created_at).toLocaleDateString(),
+        estimatedDays: 0
+      },
+      { 
+        id: 'review', 
+        label: 'Document Review', 
+        description: 'Our specialists are reviewing your financial documents',
+        completed: application.status !== 'pending',
+        date: application.status !== 'pending' ? new Date(application.updated_at).toLocaleDateString() : '',
+        estimatedDays: 1
+      },
+      { 
+        id: 'qualification', 
+        label: 'Qualification Assessment', 
+        description: 'Determining your eligibility for our debt relief program',
+        completed: application.status === 'approved',
+        date: application.status === 'approved' ? new Date(application.updated_at).toLocaleDateString() : '',
+        estimatedDays: 3
+      },
+      { 
+        id: 'approval', 
+        label: 'Application Approval', 
+        description: 'Application approved and ready for enrollment',
+        completed: application.status === 'approved',
+        date: application.status === 'approved' ? new Date(application.updated_at).toLocaleDateString() : '',
+        estimatedDays: 5
+      }
+    ];
+
+    // Add enrollment stage if application is approved
+    if (application.status === 'approved') {
+      baseStages.push({
+        id: 'enrollment', 
+        label: 'Program Enrollment', 
+        description: 'Welcome call and program setup approval',
+        completed: application.enrollment_status === 'approved',
+        date: application.enrollment_approved_at ? new Date(application.enrollment_approved_at).toLocaleDateString() : '',
+        estimatedDays: 7
+      });
     }
-  ];
+
+    // Add negotiations stage if enrollment is approved
+    if (application.enrollment_status === 'approved') {
+      baseStages.push({
+        id: 'negotiations', 
+        label: 'Creditor Negotiations', 
+        description: 'Active negotiations with your creditors begin',
+        completed: application.negotiations_status === 'approved',
+        date: application.negotiations_approved_at ? new Date(application.negotiations_approved_at).toLocaleDateString() : '',
+        estimatedDays: 30
+      });
+    }
+
+    return baseStages;
+  };
+
+  const stages = getStages();
 
   const statusColor = 
     application.status === 'approved' ? 'bg-green-100 text-green-800 border-green-200' : 
@@ -73,6 +91,20 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ application }) =>
     <Clock className="h-5 w-5" />;
 
   const getNextSteps = () => {
+    if (application.status === 'declined') return [];
+    
+    if (application.negotiations_status === 'approved') {
+      return ['Your creditor negotiations are active and ongoing'];
+    }
+    
+    if (application.enrollment_status === 'approved' && application.negotiations_status === 'pending') {
+      return ['Waiting for creditor negotiations approval from our team'];
+    }
+    
+    if (application.status === 'approved' && application.enrollment_status === 'pending') {
+      return ['Waiting for program enrollment approval from our team'];
+    }
+    
     if (application.status === 'approved') {
       return [
         'Expect a welcome call from your dedicated specialist within 24-48 hours',
@@ -120,7 +152,7 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ application }) =>
           ></div>
         </div>
         
-        {application.status === 'pending' && (
+        {application.status === 'pending' && currentStage >= 0 && (
           <div className="flex items-center text-sm text-blue-700 bg-blue-50 rounded-md p-3 border border-blue-200">
             <Clock className="h-4 w-4 mr-2" />
             <span>Estimated completion: {stages[currentStage]?.estimatedDays || 1}-{(stages[currentStage]?.estimatedDays || 1) + 2} business days</span>

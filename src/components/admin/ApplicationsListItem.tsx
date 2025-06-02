@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ChevronDown, ChevronUp, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { ChevronDown, ChevronUp, CheckCircle, XCircle, Clock, UserCheck, HandCoins } from 'lucide-react';
 import DebtAccountsManager from './DebtAccountsManager';
 
 interface Application {
@@ -17,6 +17,10 @@ interface Application {
   employment_status?: string;
   monthly_income?: number;
   credit_score?: string;
+  enrollment_status?: 'pending' | 'approved' | 'declined';
+  enrollment_approved_at?: string;
+  negotiations_status?: 'pending' | 'approved' | 'declined';
+  negotiations_approved_at?: string;
   created_at: string;
   updated_at: string;
 }
@@ -27,6 +31,10 @@ interface ApplicationsListItemProps {
   toggleExpand: (id: string) => void;
   handleApprove: (id: string) => void;
   handleDecline: (id: string) => void;
+  handleApproveEnrollment: (id: string) => void;
+  handleDeclineEnrollment: (id: string) => void;
+  handleApproveNegotiations: (id: string) => void;
+  handleDeclineNegotiations: (id: string) => void;
   formatDate: (dateString: string) => string;
 }
 
@@ -36,6 +44,10 @@ const ApplicationsListItem: React.FC<ApplicationsListItemProps> = ({
   toggleExpand,
   handleApprove,
   handleDecline,
+  handleApproveEnrollment,
+  handleDeclineEnrollment,
+  handleApproveNegotiations,
+  handleDeclineNegotiations,
   formatDate
 }) => {
   const getStatusIcon = (status: string) => {
@@ -68,6 +80,9 @@ const ApplicationsListItem: React.FC<ApplicationsListItemProps> = ({
     }).format(amount);
   };
 
+  const canApproveEnrollment = application.status === 'approved' && application.enrollment_status === 'pending';
+  const canApproveNegotiations = application.enrollment_status === 'approved' && application.negotiations_status === 'pending';
+
   return (
     <>
       <tr className="hover:bg-gray-50">
@@ -86,30 +101,82 @@ const ApplicationsListItem: React.FC<ApplicationsListItemProps> = ({
           {formatDate(application.created_at)}
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="flex items-center">
-            {getStatusIcon(application.status)}
-            <span className={`ml-2 ${getStatusBadge(application.status)}`}>
-              {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
-            </span>
+          <div className="flex flex-col space-y-1">
+            <div className="flex items-center">
+              {getStatusIcon(application.status)}
+              <span className={`ml-2 ${getStatusBadge(application.status)}`}>
+                App: {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
+              </span>
+            </div>
+            {application.status === 'approved' && (
+              <div className="flex items-center">
+                {getStatusIcon(application.enrollment_status || 'pending')}
+                <span className={`ml-2 ${getStatusBadge(application.enrollment_status || 'pending')}`}>
+                  Enroll: {(application.enrollment_status || 'pending').charAt(0).toUpperCase() + (application.enrollment_status || 'pending').slice(1)}
+                </span>
+              </div>
+            )}
+            {application.enrollment_status === 'approved' && (
+              <div className="flex items-center">
+                {getStatusIcon(application.negotiations_status || 'pending')}
+                <span className={`ml-2 ${getStatusBadge(application.negotiations_status || 'pending')}`}>
+                  Negotiate: {(application.negotiations_status || 'pending').charAt(0).toUpperCase() + (application.negotiations_status || 'pending').slice(1)}
+                </span>
+              </div>
+            )}
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-          <div className="flex space-x-2">
+          <div className="flex flex-col space-y-2">
             {application.status === 'pending' && (
-              <>
+              <div className="flex space-x-2">
                 <button
                   onClick={() => handleApprove(application.id)}
                   className="text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1 rounded-md transition-colors"
                 >
-                  Approve
+                  Approve App
                 </button>
                 <button
                   onClick={() => handleDecline(application.id)}
                   className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-md transition-colors"
                 >
+                  Decline App
+                </button>
+              </div>
+            )}
+            {canApproveEnrollment && (
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleApproveEnrollment(application.id)}
+                  className="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-md transition-colors flex items-center"
+                >
+                  <UserCheck className="h-4 w-4 mr-1" />
+                  Approve Enrollment
+                </button>
+                <button
+                  onClick={() => handleDeclineEnrollment(application.id)}
+                  className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-md transition-colors"
+                >
                   Decline
                 </button>
-              </>
+              </div>
+            )}
+            {canApproveNegotiations && (
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleApproveNegotiations(application.id)}
+                  className="text-purple-600 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 px-3 py-1 rounded-md transition-colors flex items-center"
+                >
+                  <HandCoins className="h-4 w-4 mr-1" />
+                  Approve Negotiations
+                </button>
+                <button
+                  onClick={() => handleDeclineNegotiations(application.id)}
+                  className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-md transition-colors"
+                >
+                  Decline
+                </button>
+              </div>
             )}
           </div>
         </td>
@@ -208,7 +275,7 @@ const ApplicationsListItem: React.FC<ApplicationsListItemProps> = ({
               {/* Application Timeline */}
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Application Timeline</h4>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <div className="flex items-center text-sm">
                     <span className="font-medium text-gray-700 w-32">Submitted:</span>
                     <span className="text-gray-900">{formatDate(application.created_at)}</span>
@@ -223,6 +290,18 @@ const ApplicationsListItem: React.FC<ApplicationsListItemProps> = ({
                       {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
                     </span>
                   </div>
+                  {application.enrollment_approved_at && (
+                    <div className="flex items-center text-sm">
+                      <span className="font-medium text-gray-700 w-32">Enrollment:</span>
+                      <span className="text-gray-900">{formatDate(application.enrollment_approved_at)} - {application.enrollment_status}</span>
+                    </div>
+                  )}
+                  {application.negotiations_approved_at && (
+                    <div className="flex items-center text-sm">
+                      <span className="font-medium text-gray-700 w-32">Negotiations:</span>
+                      <span className="text-gray-900">{formatDate(application.negotiations_approved_at)} - {application.negotiations_status}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

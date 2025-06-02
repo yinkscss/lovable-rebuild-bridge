@@ -40,10 +40,14 @@ export type Database = {
           debt_range: string | null
           email: string
           employment_status: string | null
+          enrollment_approved_at: string | null
+          enrollment_status: string | null
           first_name: string
           id: string
           last_name: string
           monthly_income: number | null
+          negotiations_approved_at: string | null
+          negotiations_status: string | null
           phone: string
           ssn_last_four: string | null
           status: string
@@ -59,10 +63,14 @@ export type Database = {
           debt_range?: string | null
           email: string
           employment_status?: string | null
+          enrollment_approved_at?: string | null
+          enrollment_status?: string | null
           first_name: string
           id?: string
           last_name: string
           monthly_income?: number | null
+          negotiations_approved_at?: string | null
+          negotiations_status?: string | null
           phone: string
           ssn_last_four?: string | null
           status?: string
@@ -78,10 +86,14 @@ export type Database = {
           debt_range?: string | null
           email?: string
           employment_status?: string | null
+          enrollment_approved_at?: string | null
+          enrollment_status?: string | null
           first_name?: string
           id?: string
           last_name?: string
           monthly_income?: number | null
+          negotiations_approved_at?: string | null
+          negotiations_status?: string | null
           phone?: string
           ssn_last_four?: string | null
           status?: string

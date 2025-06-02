@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'react-hot-toast';
@@ -18,6 +19,10 @@ interface Application {
   ssn_last_four?: string;
   employment_status?: string;
   monthly_income?: number;
+  enrollment_status?: 'pending' | 'approved' | 'declined';
+  enrollment_approved_at?: string;
+  negotiations_status?: 'pending' | 'approved' | 'declined';
+  negotiations_approved_at?: string;
   created_at: string;
   updated_at: string;
 }
@@ -125,6 +130,134 @@ const ApplicationsList: React.FC = () => {
     }
   };
 
+  const handleApproveEnrollment = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('applications')
+        .update({ 
+          enrollment_status: 'approved',
+          enrollment_approved_at: new Date().toISOString(),
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setApplications(applications.map(app => 
+        app.id === id 
+          ? { 
+              ...app, 
+              enrollment_status: 'approved',
+              enrollment_approved_at: new Date().toISOString(),
+              updated_at: new Date().toISOString() 
+            } 
+          : app
+      ));
+      
+      toast.success('Program enrollment approved successfully');
+    } catch (error) {
+      console.error('Error approving enrollment:', error);
+      toast.error('Failed to approve enrollment');
+    }
+  };
+
+  const handleDeclineEnrollment = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('applications')
+        .update({ 
+          enrollment_status: 'declined',
+          enrollment_approved_at: new Date().toISOString(),
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setApplications(applications.map(app => 
+        app.id === id 
+          ? { 
+              ...app, 
+              enrollment_status: 'declined',
+              enrollment_approved_at: new Date().toISOString(),
+              updated_at: new Date().toISOString() 
+            } 
+          : app
+      ));
+      
+      toast.success('Program enrollment declined');
+    } catch (error) {
+      console.error('Error declining enrollment:', error);
+      toast.error('Failed to decline enrollment');
+    }
+  };
+
+  const handleApproveNegotiations = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('applications')
+        .update({ 
+          negotiations_status: 'approved',
+          negotiations_approved_at: new Date().toISOString(),
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setApplications(applications.map(app => 
+        app.id === id 
+          ? { 
+              ...app, 
+              negotiations_status: 'approved',
+              negotiations_approved_at: new Date().toISOString(),
+              updated_at: new Date().toISOString() 
+            } 
+          : app
+      ));
+      
+      toast.success('Creditor negotiations approved successfully');
+    } catch (error) {
+      console.error('Error approving negotiations:', error);
+      toast.error('Failed to approve negotiations');
+    }
+  };
+
+  const handleDeclineNegotiations = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('applications')
+        .update({ 
+          negotiations_status: 'declined',
+          negotiations_approved_at: new Date().toISOString(),
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setApplications(applications.map(app => 
+        app.id === id 
+          ? { 
+              ...app, 
+              negotiations_status: 'declined',
+              negotiations_approved_at: new Date().toISOString(),
+              updated_at: new Date().toISOString() 
+            } 
+          : app
+      ));
+      
+      toast.success('Creditor negotiations declined');
+    } catch (error) {
+      console.error('Error declining negotiations:', error);
+      toast.error('Failed to decline negotiations');
+    }
+  };
+
   const filteredApplications = applications.filter(app => {
     const matchesSearch = 
       `${app.first_name} ${app.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -192,6 +325,10 @@ const ApplicationsList: React.FC = () => {
                   toggleExpand={toggleExpand}
                   handleApprove={handleApprove}
                   handleDecline={handleDecline}
+                  handleApproveEnrollment={handleApproveEnrollment}
+                  handleDeclineEnrollment={handleDeclineEnrollment}
+                  handleApproveNegotiations={handleApproveNegotiations}
+                  handleDeclineNegotiations={handleDeclineNegotiations}
                   formatDate={formatDate}
                 />
               ))

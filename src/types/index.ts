@@ -1,3 +1,4 @@
+
 export interface Testimonial {
   id: string;
   name: string;
@@ -78,6 +79,10 @@ export interface Application {
   employment_status?: string;
   monthly_income?: number;
   credit_score?: string;
+  enrollment_status?: 'pending' | 'approved' | 'declined';
+  enrollment_approved_at?: string;
+  negotiations_status?: 'pending' | 'approved' | 'declined';
+  negotiations_approved_at?: string;
   created_at: string;
   updated_at: string;
   debt_accounts?: DebtAccount[];
