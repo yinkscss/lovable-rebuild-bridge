@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'react-hot-toast';
@@ -14,7 +13,6 @@ import {
   Edit, 
   Trash2, 
   Download,
-  UserPlus,
   Shield,
   ShieldOff,
   Users
