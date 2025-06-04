@@ -60,18 +60,25 @@ const UserManagement: React.FC = () => {
     try {
       setLoading(true);
       
-      // Fetch users with admin status
+      // Fetch all users
       const { data: usersData, error: usersError } = await supabase
         .from('users')
-        .select(`
-          *,
-          admin_users!left(id)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (usersError) throw usersError;
 
-      // Transform data to include admin status
+      // Fetch admin users separately
+      const { data: adminData, error: adminError } = await supabase
+        .from('admin_users')
+        .select('id');
+
+      if (adminError) throw adminError;
+
+      // Create a Set of admin user IDs for efficient lookup
+      const adminIds = new Set(adminData.map(admin => admin.id));
+
+      // Combine the data
       const formattedUsers = (usersData || []).map(user => ({
         id: user.id,
         email: user.email || '',
@@ -80,7 +87,7 @@ const UserManagement: React.FC = () => {
         phone: user.phone || '',
         created_at: user.created_at,
         updated_at: user.updated_at || user.created_at,
-        is_admin: user.admin_users && user.admin_users.length > 0
+        is_admin: adminIds.has(user.id)
       }));
 
       setUsers(formattedUsers);
