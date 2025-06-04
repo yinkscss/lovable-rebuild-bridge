@@ -117,4 +117,5 @@ export type AppRoute =
   | 'blog'
   | 'admin'
   | 'admin-applications'
-  | 'admin-payments';
+  | 'admin-payments'
+  | 'user-management';

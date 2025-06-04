@@ -9,6 +9,48 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_user_id: string | null
+          created_at: string | null
+          details: Json | null
+          id: string
+          target_user_id: string | null
+        }
+        Insert: {
+          action: string
+          admin_user_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          target_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          target_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_audit_log_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_audit_log_target_user_id_fkey"
+            columns: ["target_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_users: {
         Row: {
           created_at: string | null
@@ -358,9 +400,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      demote_from_admin: {
+        Args: { target_user_id: string }
+        Returns: Json
+      }
       is_admin: {
         Args: { user_id: string }
         Returns: boolean
+      }
+      log_admin_action: {
+        Args: {
+          action_name: string
+          target_user?: string
+          action_details?: Json
+        }
+        Returns: undefined
+      }
+      promote_to_admin: {
+        Args: { target_user_id: string }
+        Returns: Json
       }
     }
     Enums: {

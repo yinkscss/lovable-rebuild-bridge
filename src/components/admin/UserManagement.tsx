@@ -14,7 +14,9 @@ import {
   Edit, 
   Trash2, 
   Download,
-  AlertCircle,
+  UserPlus,
+  Shield,
+  ShieldOff,
   Users
 } from 'lucide-react';
 
@@ -26,8 +28,7 @@ interface User {
   phone: string;
   created_at: string;
   updated_at: string;
-  last_sign_in_at?: string;
-  email_confirmed_at?: string;
+  is_admin?: boolean;
 }
 
 interface Application {
@@ -42,10 +43,9 @@ const UserManagement: React.FC = () => {
   const [applications, setApplications] = useState<{ [key: string]: Application }>({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'pending' | 'approved' | 'declined'>('all');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'admin' | 'regular'>('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [adminError, setAdminError] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({
     first_name: '',
     last_name: '',
@@ -61,69 +61,20 @@ const UserManagement: React.FC = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      setAdminError(null);
       
-      // First try to fetch from auth.users (requires admin privileges)
-      try {
-        const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
-        
-        if (authError) {
-          if (authError.message === 'User not allowed' || authError.status === 403) {
-            // Fallback to public users table if admin access is not available
-            await fetchUsersFromPublicTable();
-            return;
-          }
-          throw authError;
-        }
-
-        // If we have admin access, merge with profile data
-        const { data: profileUsers, error: profileError } = await supabase
-          .from('users')
-          .select('*');
-
-        if (profileError) throw profileError;
-
-        const mergedUsers = authUsers.users.map(authUser => {
-          const profile = profileUsers.find(p => p.id === authUser.id);
-          return {
-            id: authUser.id,
-            email: authUser.email || '',
-            first_name: profile?.first_name || authUser.user_metadata?.first_name || '',
-            last_name: profile?.last_name || authUser.user_metadata?.last_name || '',
-            phone: profile?.phone || authUser.user_metadata?.phone || '',
-            created_at: authUser.created_at,
-            updated_at: authUser.updated_at || authUser.created_at,
-            last_sign_in_at: authUser.last_sign_in_at,
-            email_confirmed_at: authUser.email_confirmed_at
-          };
-        });
-
-        setUsers(mergedUsers);
-        
-      } catch (adminError) {
-        console.log('Admin access not available, falling back to public table');
-        await fetchUsersFromPublicTable();
-      }
-      
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      setAdminError('Failed to load users. You may not have the necessary permissions.');
-      toast.error('Failed to load users');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchUsersFromPublicTable = async () => {
-    try {
-      const { data: publicUsers, error } = await supabase
+      // Fetch users with admin status
+      const { data: usersData, error: usersError } = await supabase
         .from('users')
-        .select('*')
+        .select(`
+          *,
+          admin_users!left(id)
+        `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (usersError) throw usersError;
 
-      const formattedUsers = (publicUsers || []).map(user => ({
+      // Transform data to include admin status
+      const formattedUsers = (usersData || []).map(user => ({
         id: user.id,
         email: user.email || '',
         first_name: user.first_name || '',
@@ -131,16 +82,16 @@ const UserManagement: React.FC = () => {
         phone: user.phone || '',
         created_at: user.created_at,
         updated_at: user.updated_at || user.created_at,
-        last_sign_in_at: undefined,
-        email_confirmed_at: user.created_at // Assume confirmed if in public table
+        is_admin: user.admin_users && user.admin_users.length > 0
       }));
 
       setUsers(formattedUsers);
-      setAdminError('Limited view: Showing users from public database only. Admin privileges required for full user management.');
       
     } catch (error) {
-      console.error('Error fetching from public users table:', error);
-      throw error;
+      console.error('Error fetching users:', error);
+      toast.error('Failed to load users');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -180,8 +131,7 @@ const UserManagement: React.FC = () => {
     if (!selectedUser) return;
 
     try {
-      // Update in public.users table
-      const { error: profileError } = await supabase
+      const { error } = await supabase
         .from('users')
         .update({
           first_name: editForm.first_name,
@@ -192,29 +142,14 @@ const UserManagement: React.FC = () => {
         })
         .eq('id', selectedUser.id);
 
-      if (profileError) throw profileError;
+      if (error) throw error;
 
-      // Try to update auth user if possible (requires admin privileges)
-      try {
-        if (editForm.email !== selectedUser.email) {
-          const { error: authError } = await supabase.auth.admin.updateUserById(
-            selectedUser.id,
-            {
-              email: editForm.email,
-              user_metadata: {
-                first_name: editForm.first_name,
-                last_name: editForm.last_name
-              }
-            }
-          );
-
-          if (authError && authError.status !== 403) {
-            throw authError;
-          }
-        }
-      } catch (authError) {
-        console.log('Auth update failed (may not have admin privileges):', authError);
-      }
+      // Log admin action
+      await supabase.rpc('log_admin_action', {
+        action_name: 'user_updated',
+        target_user: selectedUser.id,
+        action_details: { updated_fields: Object.keys(editForm) }
+      });
 
       toast.success('User updated successfully');
       setIsEditModalOpen(false);
@@ -231,23 +166,19 @@ const UserManagement: React.FC = () => {
     }
 
     try {
-      // Try to delete from auth first (requires admin privileges)
-      try {
-        const { error: authError } = await supabase.auth.admin.deleteUser(userId);
-        if (authError && authError.status !== 403) {
-          throw authError;
-        }
-      } catch (authError) {
-        console.log('Auth deletion failed (may not have admin privileges):', authError);
-      }
-
-      // Delete from public users table
-      const { error: publicError } = await supabase
+      const { error } = await supabase
         .from('users')
         .delete()
         .eq('id', userId);
 
-      if (publicError) throw publicError;
+      if (error) throw error;
+
+      // Log admin action
+      await supabase.rpc('log_admin_action', {
+        action_name: 'user_deleted',
+        target_user: userId,
+        action_details: { user_name: userName }
+      });
 
       toast.success('User deleted successfully');
       fetchUsers();
@@ -257,15 +188,59 @@ const UserManagement: React.FC = () => {
     }
   };
 
+  const handlePromoteToAdmin = async (userId: string, userName: string) => {
+    try {
+      const { data, error } = await supabase.rpc('promote_to_admin', {
+        target_user_id: userId
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast.success(`${userName} promoted to admin successfully`);
+        fetchUsers();
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.error('Error promoting user:', error);
+      toast.error('Failed to promote user to admin');
+    }
+  };
+
+  const handleDemoteFromAdmin = async (userId: string, userName: string) => {
+    if (!confirm(`Are you sure you want to remove admin privileges from "${userName}"?`)) {
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('demote_from_admin', {
+        target_user_id: userId
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast.success(`Admin privileges removed from ${userName}`);
+        fetchUsers();
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.error('Error demoting user:', error);
+      toast.error('Failed to remove admin privileges');
+    }
+  };
+
   const exportUsers = () => {
     const csvContent = [
-      ['Name', 'Email', 'Phone', 'Registration Date', 'Last Sign In', 'Application Status', 'Debt Amount'].join(','),
+      ['Name', 'Email', 'Phone', 'Registration Date', 'Admin Status', 'Application Status', 'Debt Amount'].join(','),
       ...filteredUsers.map(user => [
         `"${user.first_name} ${user.last_name}"`,
         user.email,
         user.phone,
         new Date(user.created_at).toLocaleDateString(),
-        user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'Never',
+        user.is_admin ? 'Admin' : 'Regular User',
         applications[user.id]?.status || 'No Application',
         applications[user.id]?.debt_amount || '0'
       ].join(','))
@@ -288,20 +263,19 @@ const UserManagement: React.FC = () => {
     const userApplication = applications[user.id];
     const matchesFilter = 
       filterStatus === 'all' || 
-      (filterStatus === 'active' && user.last_sign_in_at) ||
-      (filterStatus === 'pending' && !user.email_confirmed_at) ||
-      (userApplication && userApplication.status === filterStatus);
+      (filterStatus === 'admin' && user.is_admin) ||
+      (filterStatus === 'regular' && !user.is_admin) ||
+      (filterStatus === 'active' && userApplication);
 
     return matchesSearch && matchesFilter;
   });
 
   const getStatusBadge = (user: User) => {
-    const application = applications[user.id];
-    
-    if (!user.email_confirmed_at) {
-      return <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Unverified</span>;
+    if (user.is_admin) {
+      return <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">Admin</span>;
     }
     
+    const application = applications[user.id];
     if (application) {
       const statusColors = {
         pending: 'bg-yellow-100 text-yellow-800',
@@ -315,7 +289,7 @@ const UserManagement: React.FC = () => {
       );
     }
     
-    return <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">Active</span>;
+    return <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">Regular User</span>;
   };
 
   if (loading) {
@@ -336,26 +310,13 @@ const UserManagement: React.FC = () => {
             <Users className="h-6 w-6 mr-3 text-blue-600" />
             User Management
           </h2>
-          <p className="mt-1 text-gray-600">Manage user accounts and monitor application status</p>
+          <p className="mt-1 text-gray-600">Manage user accounts and admin privileges</p>
         </div>
         <Button onClick={exportUsers} variant="outline" className="mt-4 md:mt-0">
           <Download className="h-4 w-4 mr-2" />
           Export Users
         </Button>
       </div>
-
-      {/* Admin Error Warning */}
-      {adminError && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-start">
-            <AlertCircle className="h-5 w-5 text-yellow-400 mt-0.5 mr-3 flex-shrink-0" />
-            <div>
-              <h3 className="text-sm font-medium text-yellow-800">Limited Access</h3>
-              <p className="text-sm text-yellow-700 mt-1">{adminError}</p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Filters */}
       <Card className="p-6">
@@ -375,10 +336,9 @@ const UserManagement: React.FC = () => {
             label=""
             options={[
               { value: 'all', label: 'All Users' },
-              { value: 'active', label: 'Active Users' },
-              { value: 'pending', label: 'Pending Verification' },
-              { value: 'approved', label: 'Approved Applications' },
-              { value: 'declined', label: 'Declined Applications' }
+              { value: 'admin', label: 'Admin Users' },
+              { value: 'regular', label: 'Regular Users' },
+              { value: 'active', label: 'Users with Applications' }
             ]}
             value={filterStatus}
             onChange={(value) => setFilterStatus(value as any)}
@@ -425,7 +385,9 @@ const UserManagement: React.FC = () => {
                   <tr key={user.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center">
+                        <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                          user.is_admin ? 'bg-purple-500' : 'bg-blue-500'
+                        }`}>
                           <span className="text-white text-sm font-medium">
                             {user.first_name?.charAt(0)}{user.last_name?.charAt(0)}
                           </span>
@@ -455,11 +417,6 @@ const UserManagement: React.FC = () => {
                         <Calendar className="h-4 w-4 mr-2 text-gray-400" />
                         {new Date(user.created_at).toLocaleDateString()}
                       </div>
-                      {user.last_sign_in_at && (
-                        <div className="text-xs text-gray-400 mt-1">
-                          Last: {new Date(user.last_sign_in_at).toLocaleDateString()}
-                        </div>
-                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {application ? (
@@ -485,6 +442,25 @@ const UserManagement: React.FC = () => {
                         >
                           <Edit className="h-4 w-4" />
                         </button>
+                        
+                        {user.is_admin ? (
+                          <button
+                            onClick={() => handleDemoteFromAdmin(user.id, `${user.first_name} ${user.last_name}`)}
+                            className="text-orange-600 hover:text-orange-900"
+                            title="Remove admin privileges"
+                          >
+                            <ShieldOff className="h-4 w-4" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handlePromoteToAdmin(user.id, `${user.first_name} ${user.last_name}`)}
+                            className="text-green-600 hover:text-green-900"
+                            title="Promote to admin"
+                          >
+                            <Shield className="h-4 w-4" />
+                          </button>
+                        )}
+                        
                         <button
                           onClick={() => handleDeleteUser(user.id, `${user.first_name} ${user.last_name}`)}
                           className="text-red-600 hover:text-red-900"
