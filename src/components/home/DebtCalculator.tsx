@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { ArrowRight, Check, CreditCard, Shield, Home, Briefcase, GraduationCap } from 'lucide-react';
+import { ArrowRight, Check, CreditCard, Shield, Home, Briefcase, GraduationCap, Car } from 'lucide-react';
 import { DEBT_RANGES, VALUE_PROPS } from '../../lib/constants';
 import Select from '../ui/Select';
 import Button from '../ui/Button';
@@ -36,6 +35,7 @@ const DebtCalculator: React.FC = () => {
     { id: 'insurance', label: 'Insurance', icon: <Shield className="h-5 w-5 mb-1" /> },
     { id: 'mortgages', label: 'Mortgages', icon: <Home className="h-5 w-5 mb-1" /> },
     { id: 'personal-loans', label: 'Personal Loans', icon: <Briefcase className="h-5 w-5 mb-1" /> },
+    { id: 'auto-loans', label: 'Auto Loans', icon: <Car className="h-5 w-5 mb-1" /> },
     { id: 'student-loans', label: 'Student Loans', icon: <GraduationCap className="h-5 w-5 mb-1" /> },
   ];
 
