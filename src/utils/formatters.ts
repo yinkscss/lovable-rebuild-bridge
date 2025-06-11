@@ -8,10 +8,15 @@ export const formatCurrency = (amount: number): string => {
 };
 
 export const formatPhoneNumber = (phoneNumber: string): string => {
+  // Handle the +1 prefix format specifically
+  if (phoneNumber.startsWith('+1 ')) {
+    return phoneNumber; // Return as-is since it's already formatted correctly
+  }
+  
   const cleaned = phoneNumber.replace(/\D/g, '');
   const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
   if (match) {
-    return `${match[1]}-${match[2]}-${match[3]}`;
+    return `+1 ${match[1]}-${match[2]}-${match[3]}`;
   }
   return phoneNumber;
 };

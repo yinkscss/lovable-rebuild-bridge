@@ -113,7 +113,7 @@ const Header: React.FC = () => {
               </button>
             )}
             <a 
-              href={`tel:${COMPANY_PHONE.replace(/-/g, '')}`} 
+              href={`tel:${COMPANY_PHONE}`} 
               className="flex items-center text-gray-700 hover:text-blue-600"
             >
               <Phone className="h-4 w-4 mr-1" />
@@ -208,7 +208,7 @@ const Header: React.FC = () => {
                   </button>
                 )}
                 <a 
-                  href={`tel:${COMPANY_PHONE.replace(/-/g, '')}`} 
+                  href={`tel:${COMPANY_PHONE}`} 
                   className="flex items-center text-gray-700 hover:text-blue-600 mb-4"
                 >
                   <Phone className="h-4 w-4 mr-1" />

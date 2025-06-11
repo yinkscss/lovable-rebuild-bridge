@@ -1,6 +1,7 @@
+
 import { DebtRange, Testimonial } from '../types';
 
-export const COMPANY_PHONE = '+4102584893';
+export const COMPANY_PHONE = '+1 410-258-4893';
 export const COMPANY_EMAIL = 'info@nationaldebtsrelief.org';
 
 export const DEBT_RANGES: DebtRange[] = [
