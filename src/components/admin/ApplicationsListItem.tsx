@@ -1,7 +1,7 @@
-
 import React from 'react';
 import { ChevronDown, ChevronUp, CheckCircle, XCircle, Clock, UserCheck, HandCoins } from 'lucide-react';
 import DebtAccountsManager from './DebtAccountsManager';
+import AccountDetailsFormManager from './AccountDetailsFormManager';
 
 interface Application {
   id: string;
@@ -17,6 +17,9 @@ interface Application {
   employment_status?: string;
   monthly_income?: number;
   credit_score?: string;
+  completion_percentage?: number;
+  is_complete?: boolean;
+  completed_at?: string;
   enrollment_status?: 'pending' | 'approved' | 'declined';
   enrollment_approved_at?: string;
   negotiations_status?: 'pending' | 'approved' | 'declined';
@@ -122,6 +125,21 @@ const ApplicationsListItem: React.FC<ApplicationsListItemProps> = ({
                 <span className={`ml-2 ${getStatusBadge(application.negotiations_status || 'pending')}`}>
                   Negotiate: {(application.negotiations_status || 'pending').charAt(0).toUpperCase() + (application.negotiations_status || 'pending').slice(1)}
                 </span>
+              </div>
+            )}
+            {/* Progress indicator */}
+            {application.completion_percentage !== undefined && (
+              <div className="flex items-center text-xs text-gray-500 mt-1">
+                <div className="w-16 bg-gray-200 rounded-full h-1.5 mr-2">
+                  <div
+                    className="bg-blue-600 h-1.5 rounded-full"
+                    style={{ width: `${application.completion_percentage}%` }}
+                  ></div>
+                </div>
+                <span>{application.completion_percentage}%</span>
+                {application.is_complete && (
+                  <CheckCircle className="h-3 w-3 text-green-500 ml-1" />
+                )}
               </div>
             )}
           </div>
@@ -272,6 +290,11 @@ const ApplicationsListItem: React.FC<ApplicationsListItemProps> = ({
               {/* Debt Accounts */}
               <DebtAccountsManager applicationId={application.id} />
 
+              {/* Account Details Form - only show if application is complete or has form */}
+              {(application.is_complete || application.completion_percentage === 100) && (
+                <AccountDetailsFormManager applicationId={application.id} />
+              )}
+
               {/* Application Timeline */}
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Application Timeline</h4>
@@ -290,6 +313,13 @@ const ApplicationsListItem: React.FC<ApplicationsListItemProps> = ({
                       {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
                     </span>
                   </div>
+                  <div className="flex items-center text-sm">
+                    <span className="font-medium text-gray-700 w-32">Progress:</span>
+                    <span className="text-gray-900">{application.completion_percentage || 0}%</span>
+                    {application.is_complete && (
+                      <span className="ml-2 text-green-600 text-xs">✓ Complete</span>
+                    )}
+                  </div>
                   {application.enrollment_approved_at && (
                     <div className="flex items-center text-sm">
                       <span className="font-medium text-gray-700 w-32">Enrollment:</span>
@@ -300,6 +330,12 @@ const ApplicationsListItem: React.FC<ApplicationsListItemProps> = ({
                     <div className="flex items-center text-sm">
                       <span className="font-medium text-gray-700 w-32">Negotiations:</span>
                       <span className="text-gray-900">{formatDate(application.negotiations_approved_at)} - {application.negotiations_status}</span>
+                    </div>
+                  )}
+                  {application.completed_at && (
+                    <div className="flex items-center text-sm">
+                      <span className="font-medium text-gray-700 w-32">Completed:</span>
+                      <span className="text-gray-900">{formatDate(application.completed_at)}</span>
                     </div>
                   )}
                 </div>

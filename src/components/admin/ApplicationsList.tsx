@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'react-hot-toast';
@@ -19,6 +18,9 @@ interface Application {
   ssn_last_four?: string;
   employment_status?: string;
   monthly_income?: number;
+  completion_percentage?: number;
+  is_complete?: boolean;
+  completed_at?: string;
   enrollment_status?: 'pending' | 'approved' | 'declined';
   enrollment_approved_at?: string;
   negotiations_status?: 'pending' | 'approved' | 'declined';
@@ -305,7 +307,7 @@ const ApplicationsList: React.FC = () => {
                 Date Submitted
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
+                Status & Progress
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions

@@ -9,6 +9,83 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      account_details_forms: {
+        Row: {
+          account_sold: boolean | null
+          account_type: string
+          application_id: string
+          completed_at: string | null
+          created_at: string | null
+          current_balance: number
+          current_company: string | null
+          date_opened: string | null
+          filled_by_admin_id: string | null
+          id: string
+          last_payment_date: string | null
+          open_closed: string | null
+          original_balance: number | null
+          original_creditor: string
+          paid_off: boolean | null
+          payment_amount: number | null
+          payment_frequency: string | null
+          status: string | null
+          term: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          account_sold?: boolean | null
+          account_type: string
+          application_id: string
+          completed_at?: string | null
+          created_at?: string | null
+          current_balance?: number
+          current_company?: string | null
+          date_opened?: string | null
+          filled_by_admin_id?: string | null
+          id?: string
+          last_payment_date?: string | null
+          open_closed?: string | null
+          original_balance?: number | null
+          original_creditor: string
+          paid_off?: boolean | null
+          payment_amount?: number | null
+          payment_frequency?: string | null
+          status?: string | null
+          term?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          account_sold?: boolean | null
+          account_type?: string
+          application_id?: string
+          completed_at?: string | null
+          created_at?: string | null
+          current_balance?: number
+          current_company?: string | null
+          date_opened?: string | null
+          filled_by_admin_id?: string | null
+          id?: string
+          last_payment_date?: string | null
+          open_closed?: string | null
+          original_balance?: number | null
+          original_creditor?: string
+          paid_off?: boolean | null
+          payment_amount?: number | null
+          payment_frequency?: string | null
+          status?: string | null
+          term?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_details_forms_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: true
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_audit_log: {
         Row: {
           action: string
@@ -75,6 +152,8 @@ export type Database = {
       applications: {
         Row: {
           address: string | null
+          completed_at: string | null
+          completion_percentage: number | null
           created_at: string | null
           credit_score: string | null
           date_of_birth: string | null
@@ -86,6 +165,7 @@ export type Database = {
           enrollment_status: string | null
           first_name: string
           id: string
+          is_complete: boolean | null
           last_name: string
           monthly_income: number | null
           negotiations_approved_at: string | null
@@ -98,6 +178,8 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          completed_at?: string | null
+          completion_percentage?: number | null
           created_at?: string | null
           credit_score?: string | null
           date_of_birth?: string | null
@@ -109,6 +191,7 @@ export type Database = {
           enrollment_status?: string | null
           first_name: string
           id?: string
+          is_complete?: boolean | null
           last_name: string
           monthly_income?: number | null
           negotiations_approved_at?: string | null
@@ -121,6 +204,8 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          completed_at?: string | null
+          completion_percentage?: number | null
           created_at?: string | null
           credit_score?: string | null
           date_of_birth?: string | null
@@ -132,6 +217,7 @@ export type Database = {
           enrollment_status?: string | null
           first_name?: string
           id?: string
+          is_complete?: boolean | null
           last_name?: string
           monthly_income?: number | null
           negotiations_approved_at?: string | null
@@ -400,6 +486,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_application_completion: {
+        Args: { app_id: string }
+        Returns: number
+      }
       demote_from_admin: {
         Args: { target_user_id: string }
         Returns: Json

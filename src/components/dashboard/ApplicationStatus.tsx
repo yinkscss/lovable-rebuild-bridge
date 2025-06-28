@@ -1,293 +1,288 @@
 
-import React from 'react';
-import { Check, Clock, X, AlertTriangle, FileText, Users, DollarSign } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../lib/auth';
+import { toast } from 'react-hot-toast';
+import { formatCurrency, formatDate } from '../../utils/formatters';
+import { CheckCircle, Clock, XCircle, AlertCircle, FileText, User, DollarSign } from 'lucide-react';
 
-interface ApplicationStatusProps {
-  application: {
-    status: 'pending' | 'approved' | 'declined';
-    enrollment_status?: 'pending' | 'approved' | 'declined';
-    enrollment_approved_at?: string;
-    negotiations_status?: 'pending' | 'approved' | 'declined';
-    negotiations_approved_at?: string;
-    created_at: string;
-    updated_at: string;
-  };
+interface Application {
+  id: string;
+  status: 'pending' | 'approved' | 'declined';
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  debt_amount: number;
+  address?: string;
+  date_of_birth?: string;
+  ssn_last_four?: string;
+  employment_status?: string;
+  monthly_income?: number;
+  completion_percentage: number;
+  is_complete: boolean;
+  completed_at?: string;
+  enrollment_status?: 'pending' | 'approved' | 'declined';
+  enrollment_approved_at?: string;
+  negotiations_status?: 'pending' | 'approved' | 'declined';
+  negotiations_approved_at?: string;
+  created_at: string;
+  updated_at: string;
 }
 
-const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ application }) => {
-  const getStages = () => {
-    const baseStages = [
-      { 
-        id: 'submitted', 
-        label: 'Application Submitted', 
-        description: 'Your application has been received and is in our system',
-        completed: true,
-        date: new Date(application.created_at).toLocaleDateString(),
-        estimatedDays: 0
-      },
-      { 
-        id: 'review', 
-        label: 'Document Review', 
-        description: 'Our specialists are reviewing your financial documents',
-        completed: application.status !== 'pending',
-        date: application.status !== 'pending' ? new Date(application.updated_at).toLocaleDateString() : '',
-        estimatedDays: 1
-      },
-      { 
-        id: 'qualification', 
-        label: 'Qualification Assessment', 
-        description: 'Determining your eligibility for our debt relief program',
-        completed: application.status === 'approved',
-        date: application.status === 'approved' ? new Date(application.updated_at).toLocaleDateString() : '',
-        estimatedDays: 3
-      },
-      { 
-        id: 'approval', 
-        label: 'Application Approval', 
-        description: 'Application approved and ready for enrollment',
-        completed: application.status === 'approved',
-        date: application.status === 'approved' ? new Date(application.updated_at).toLocaleDateString() : '',
-        estimatedDays: 5
-      }
-    ];
+interface ApplicationStatusProps {
+  applicationId: string;
+}
 
-    // Add enrollment stage if application is approved
-    if (application.status === 'approved') {
-      baseStages.push({
-        id: 'enrollment', 
-        label: 'Program Enrollment', 
-        description: 'Welcome call and program setup approval',
-        completed: application.enrollment_status === 'approved',
-        date: application.enrollment_approved_at ? new Date(application.enrollment_approved_at).toLocaleDateString() : '',
-        estimatedDays: 7
-      });
+const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ applicationId }) => {
+  const { user } = useAuth();
+  const [application, setApplication] = useState<Application | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (applicationId) {
+      fetchApplication();
     }
+  }, [applicationId]);
 
-    // Add negotiations stage if enrollment is approved
-    if (application.enrollment_status === 'approved') {
-      baseStages.push({
-        id: 'negotiations', 
-        label: 'Creditor Negotiations', 
-        description: 'Active negotiations with your creditors begin',
-        completed: application.negotiations_status === 'approved',
-        date: application.negotiations_approved_at ? new Date(application.negotiations_approved_at).toLocaleDateString() : '',
-        estimatedDays: 30
-      });
+  const fetchApplication = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('applications')
+        .select('*')
+        .eq('id', applicationId)
+        .eq('user_id', user?.id)
+        .single();
+
+      if (error) throw error;
+      setApplication(data);
+    } catch (error) {
+      console.error('Error fetching application:', error);
+      toast.error('Failed to load application details');
+    } finally {
+      setLoading(false);
     }
-
-    return baseStages;
   };
 
-  const stages = getStages();
-
-  const statusColor = 
-    application.status === 'approved' ? 'bg-green-100 text-green-800 border-green-200' : 
-    application.status === 'declined' ? 'bg-red-100 text-red-800 border-red-200' : 
-    'bg-yellow-100 text-yellow-800 border-yellow-200';
-
-  const statusIcon = 
-    application.status === 'approved' ? <Check className="h-5 w-5" /> : 
-    application.status === 'declined' ? <X className="h-5 w-5" /> : 
-    <Clock className="h-5 w-5" />;
-
-  const getNextSteps = () => {
-    if (application.status === 'declined') return [];
-    
-    if (application.negotiations_status === 'approved') {
-      return ['Your creditor negotiations are active and ongoing'];
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return <CheckCircle className="h-6 w-6 text-green-500" />;
+      case 'declined':
+        return <XCircle className="h-6 w-6 text-red-500" />;
+      default:
+        return <Clock className="h-6 w-6 text-yellow-500" />;
     }
-    
-    if (application.enrollment_status === 'approved' && application.negotiations_status === 'pending') {
-      return ['Waiting for creditor negotiations approval from our team'];
-    }
-    
-    if (application.status === 'approved' && application.enrollment_status === 'pending') {
-      return ['Waiting for program enrollment approval from our team'];
-    }
-    
-    if (application.status === 'approved') {
-      return [
-        'Expect a welcome call from your dedicated specialist within 24-48 hours',
-        'Prepare any additional financial documents if requested',
-        'Review and sign your enrollment agreements'
-      ];
-    } else if (application.status === 'pending') {
-      return [
-        'Our team is reviewing your application (typically 1-3 business days)',
-        'Ensure your phone is available for potential verification calls',
-        'Check your email regularly for updates'
-      ];
-    }
-    return [];
   };
 
-  const currentStage = stages.findIndex(stage => !stage.completed);
-  const progressPercentage = ((stages.filter(stage => stage.completed).length) / stages.length) * 100;
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return 'text-green-700 bg-green-100';
+      case 'declined':
+        return 'text-red-700 bg-red-100';
+      default:
+        return 'text-yellow-700 bg-yellow-100';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+          <div className="space-y-3">
+            <div className="h-4 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!application) {
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6 text-center">
+        <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+        <p className="text-gray-500">Application not found</p>
+      </div>
+    );
+  }
+
+  const progressSteps = [
+    {
+      name: 'Application Submitted',
+      status: 'completed',
+      icon: FileText,
+      date: formatDate(application.created_at),
+    },
+    {
+      name: 'Application Review',
+      status: application.status === 'pending' ? 'current' : application.status === 'approved' ? 'completed' : 'failed',
+      icon: User,
+      date: application.status !== 'pending' ? formatDate(application.updated_at) : undefined,
+    },
+    {
+      name: 'Program Enrollment',
+      status: !application.enrollment_status || application.enrollment_status === 'pending' 
+        ? (application.status === 'approved' ? 'current' : 'upcoming')
+        : application.enrollment_status === 'approved' ? 'completed' : 'failed',
+      icon: CheckCircle,
+      date: application.enrollment_approved_at ? formatDate(application.enrollment_approved_at) : undefined,
+    },
+    {
+      name: 'Creditor Negotiations',
+      status: !application.negotiations_status || application.negotiations_status === 'pending'
+        ? (application.enrollment_status === 'approved' ? 'current' : 'upcoming')
+        : application.negotiations_status === 'approved' ? 'completed' : 'failed',
+      icon: DollarSign,
+      date: application.negotiations_approved_at ? formatDate(application.negotiations_approved_at) : undefined,
+    },
+  ];
 
   return (
-    <div className="space-y-6">
-      {/* Current Status Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <div className={`px-4 py-2 rounded-full border flex items-center ${statusColor}`}>
-              {statusIcon}
-              <span className="ml-2 font-semibold capitalize">{application.status}</span>
-            </div>
-            <div className="text-sm text-gray-600">
-              Applied on {new Date(application.created_at).toLocaleDateString()}
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold text-blue-600">{Math.round(progressPercentage)}%</div>
-            <div className="text-sm text-gray-600">Complete</div>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Application #{application.id.slice(-8)}
+          </h2>
+          <div className="flex items-center space-x-2">
+            {getStatusIcon(application.status)}
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(application.status)}`}>
+              {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
+            </span>
           </div>
         </div>
-        
+
         {/* Progress Bar */}
-        <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
-          <div 
-            className="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-500 ease-out"
-            style={{ width: `${progressPercentage}%` }}
-          ></div>
-        </div>
-        
-        {application.status === 'pending' && currentStage >= 0 && (
-          <div className="flex items-center text-sm text-blue-700 bg-blue-50 rounded-md p-3 border border-blue-200">
-            <Clock className="h-4 w-4 mr-2" />
-            <span>Estimated completion: {stages[currentStage]?.estimatedDays || 1}-{(stages[currentStage]?.estimatedDays || 1) + 2} business days</span>
+        <div className="mb-6">
+          <div className="flex justify-between text-sm mb-2">
+            <span className="font-medium text-gray-700">Overall Progress</span>
+            <span className="text-gray-600">{application.completion_percentage || 0}%</span>
           </div>
-        )}
+          <div className="w-full bg-gray-200 rounded-full h-3">
+            <div
+              className="bg-blue-600 h-3 rounded-full transition-all duration-500"
+              style={{ width: `${application.completion_percentage || 0}%` }}
+            ></div>
+          </div>
+          {application.is_complete && (
+            <p className="text-sm text-green-600 mt-2 flex items-center">
+              <CheckCircle className="h-4 w-4 mr-1" />
+              Application completed on {formatDate(application.completed_at!)}
+            </p>
+          )}
+        </div>
       </div>
 
-      {application.status === 'declined' ? (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              <X className="h-6 w-6 text-red-400" />
+      {/* Application Details */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-3">Personal Information</h3>
+          <div className="space-y-2 text-sm">
+            <div>
+              <span className="font-medium text-gray-700">Name:</span>
+              <span className="ml-2 text-gray-900">{application.first_name} {application.last_name}</span>
             </div>
-            <div className="ml-4">
-              <h3 className="text-lg font-semibold text-red-800 mb-2">
-                Application Not Approved
-              </h3>
-              <div className="text-sm text-red-700 space-y-2">
-                <p>Unfortunately, we're unable to approve your application at this time. This could be due to:</p>
-                <ul className="list-disc list-inside space-y-1 ml-4">
-                  <li>Debt amount below our minimum threshold</li>
-                  <li>Income requirements not met</li>
-                  <li>Incomplete application information</li>
-                </ul>
-                <div className="mt-4 p-3 bg-red-100 rounded-md">
-                  <p className="font-medium">Need help? Contact our support team:</p>
-                  <p>Email: info@nationaldebtsrelief.org</p>
-                  <p>Phone: (410) 258-4893</p>
-                </div>
+            <div>
+              <span className="font-medium text-gray-700">Email:</span>
+              <span className="ml-2 text-gray-900">{application.email}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Phone:</span>
+              <span className="ml-2 text-gray-900">{application.phone}</span>
+            </div>
+            {application.address && (
+              <div>
+                <span className="font-medium text-gray-700">Address:</span>
+                <span className="ml-2 text-gray-900">{application.address}</span>
               </div>
-            </div>
+            )}
           </div>
         </div>
-      ) : (
-        <div className="space-y-6">
-          {/* Detailed Progress Steps */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold mb-6 flex items-center">
-              <FileText className="h-5 w-5 mr-2 text-blue-600" />
-              Application Timeline
-            </h3>
-            
-            <div className="relative">
-              <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200"></div>
-              
-              {stages.map((stage, idx) => (
-                <div key={stage.id} className="relative flex items-start pb-8 last:pb-0">
-                  <div className="relative z-10">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 ${
-                      stage.completed 
-                        ? 'bg-blue-500 border-blue-500 text-white'
-                        : idx === currentStage
-                        ? 'bg-yellow-100 border-yellow-400 text-yellow-700'
-                        : 'bg-gray-100 border-gray-300 text-gray-500'
-                    }`}>
-                      {stage.completed ? (
-                        <Check className="h-5 w-5" />
-                      ) : idx === currentStage ? (
-                        <Clock className="h-5 w-5" />
-                      ) : (
-                        <span className="text-sm font-medium">{idx + 1}</span>
-                      )}
-                    </div>
+
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-3">Financial Information</h3>
+          <div className="space-y-2 text-sm">
+            <div>
+              <span className="font-medium text-gray-700">Total Debt:</span>
+              <span className="ml-2 text-gray-900 font-semibold">{formatCurrency(application.debt_amount)}</span>
+            </div>
+            {application.monthly_income && (
+              <div>
+                <span className="font-medium text-gray-700">Monthly Income:</span>
+                <span className="ml-2 text-gray-900">{formatCurrency(application.monthly_income)}</span>
+              </div>
+            )}
+            {application.employment_status && (
+              <div>
+                <span className="font-medium text-gray-700">Employment:</span>
+                <span className="ml-2 text-gray-900 capitalize">{application.employment_status.replace('-', ' ')}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Progress Steps */}
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Application Progress</h3>
+        <div className="space-y-4">
+          {progressSteps.map((step, index) => {
+            const Icon = step.icon;
+            return (
+              <div key={step.name} className="flex items-start">
+                <div className="flex-shrink-0">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    step.status === 'completed' 
+                      ? 'bg-green-100 text-green-600' 
+                      : step.status === 'current'
+                      ? 'bg-blue-100 text-blue-600'
+                      : step.status === 'failed'
+                      ? 'bg-red-100 text-red-600'
+                      : 'bg-gray-100 text-gray-400'
+                  }`}>
+                    <Icon className="h-5 w-5" />
                   </div>
-                  
-                  <div className="ml-6 min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                      <h4 className={`text-sm font-semibold ${
-                        stage.completed ? 'text-gray-900' : 
-                        idx === currentStage ? 'text-yellow-700' : 'text-gray-500'
-                      }`}>
-                        {stage.label}
-                      </h4>
-                      {stage.date && (
-                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                          {stage.date}
-                        </span>
-                      )}
-                    </div>
-                    
-                    <p className="text-sm text-gray-600 mt-1">{stage.description}</p>
-                    
-                    {!stage.completed && idx === currentStage && (
-                      <div className="mt-2 text-xs text-yellow-600 font-medium">
-                        Currently in progress • Est. {stage.estimatedDays} business days
-                      </div>
+                </div>
+                <div className="ml-4 flex-1">
+                  <div className="flex justify-between items-center">
+                    <p className={`font-medium ${
+                      step.status === 'completed' || step.status === 'current'
+                        ? 'text-gray-900'
+                        : 'text-gray-500'
+                    }`}>
+                      {step.name}
+                    </p>
+                    {step.date && (
+                      <span className="text-sm text-gray-500">{step.date}</span>
                     )}
                   </div>
+                  <p className={`text-sm ${
+                    step.status === 'completed'
+                      ? 'text-green-600'
+                      : step.status === 'current'
+                      ? 'text-blue-600'
+                      : step.status === 'failed'
+                      ? 'text-red-600'
+                      : 'text-gray-400'
+                  }`}>
+                    {step.status === 'completed' 
+                      ? 'Completed' 
+                      : step.status === 'current'
+                      ? 'In Progress'
+                      : step.status === 'failed'
+                      ? 'Declined'
+                      : 'Pending'}
+                  </p>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Next Steps */}
-          {getNextSteps().length > 0 && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-blue-900 mb-4 flex items-center">
-                <AlertTriangle className="h-5 w-5 mr-2" />
-                What's Next?
-              </h3>
-              <ul className="space-y-2">
-                {getNextSteps().map((step, idx) => (
-                  <li key={idx} className="flex items-start text-sm text-blue-800">
-                    <div className="w-5 h-5 rounded-full bg-blue-200 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
-                      <span className="text-xs font-medium text-blue-700">{idx + 1}</span>
-                    </div>
-                    {step}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Industry Standards Compliance */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-              <Users className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <h4 className="font-semibold text-green-800 text-sm">Certified Specialists</h4>
-              <p className="text-xs text-green-700 mt-1">IAPDA Certified Debt Consultants</p>
-            </div>
-            
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-              <FileText className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-              <h4 className="font-semibold text-blue-800 text-sm">Transparent Process</h4>
-              <p className="text-xs text-blue-700 mt-1">Clear timeline and expectations</p>
-            </div>
-            
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
-              <DollarSign className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-              <h4 className="font-semibold text-purple-800 text-sm">No Upfront Fees</h4>
-              <p className="text-xs text-purple-700 mt-1">You only pay when we settle</p>
-            </div>
-          </div>
+              </div>
+            );
+          })}
         </div>
-      )}
+      </div>
     </div>
   );
 };
