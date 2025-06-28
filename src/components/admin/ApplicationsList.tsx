@@ -5,6 +5,26 @@ import ApplicationsListItem from './ApplicationsListItem';
 import ApplicationsFilterBar from './ApplicationsFilterBar';
 import ApplicationsLoading from './ApplicationsLoading';
 
+interface DebtAccount {
+  id: string;
+  application_id: string;
+  original_creditor: string;
+  account_sold: boolean;
+  account_type: string;
+  date_opened?: string;
+  open_closed?: string;
+  status?: string;
+  current_balance: number;
+  last_payment_date?: string;
+  paid_off: boolean;
+  payment_frequency?: string;
+  payment_amount?: number;
+  original_balance?: number;
+  term?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 interface Application {
   id: string;
   status: 'pending' | 'approved' | 'declined';
@@ -27,6 +47,7 @@ interface Application {
   negotiations_approved_at?: string;
   created_at: string;
   updated_at: string;
+  debt_accounts?: DebtAccount[];
 }
 
 const ApplicationsList: React.FC = () => {
@@ -43,7 +64,28 @@ const ApplicationsList: React.FC = () => {
         setLoading(true);
         const { data, error } = await supabase
           .from('applications')
-          .select('*')
+          .select(`
+            *,
+            debt_accounts (
+              id,
+              application_id,
+              original_creditor,
+              account_sold,
+              account_type,
+              date_opened,
+              open_closed,
+              status,
+              current_balance,
+              last_payment_date,
+              paid_off,
+              payment_frequency,
+              payment_amount,
+              original_balance,
+              term,
+              created_at,
+              updated_at
+            )
+          `)
           .order('created_at', { ascending: false });
           
         if (error) {

@@ -3,6 +3,26 @@ import { ChevronDown, ChevronUp, CheckCircle, XCircle, Clock, UserCheck, HandCoi
 import DebtAccountsManager from './DebtAccountsManager';
 import AccountDetailsFormManager from './AccountDetailsFormManager';
 
+interface DebtAccount {
+  id: string;
+  application_id: string;
+  original_creditor: string;
+  account_sold: boolean;
+  account_type: string;
+  date_opened?: string;
+  open_closed?: string;
+  status?: string;
+  current_balance: number;
+  last_payment_date?: string;
+  paid_off: boolean;
+  payment_frequency?: string;
+  payment_amount?: number;
+  original_balance?: number;
+  term?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 interface Application {
   id: string;
   status: 'pending' | 'approved' | 'declined';
@@ -26,6 +46,7 @@ interface Application {
   negotiations_approved_at?: string;
   created_at: string;
   updated_at: string;
+  debt_accounts?: DebtAccount[];
 }
 
 interface ApplicationsListItemProps {
@@ -287,8 +308,23 @@ const ApplicationsListItem: React.FC<ApplicationsListItemProps> = ({
                 </div>
               </div>
 
-              {/* Debt Accounts */}
-              <DebtAccountsManager applicationId={application.id} />
+              {/* User-Submitted Debt Accounts */}
+              {application.debt_accounts && application.debt_accounts.length > 0 && (
+                <div className="bg-white rounded-lg border border-gray-200">
+                  <div className="px-6 py-4 border-b border-gray-200 bg-blue-50">
+                    <h4 className="text-lg font-semibold text-blue-900">User-Submitted Debt Accounts</h4>
+                    <p className="text-sm text-blue-700 mt-1">
+                      These are the debt accounts originally provided by the applicant during their application.
+                    </p>
+                  </div>
+                  <div className="p-6">
+                    <DebtAccountsManager 
+                      applicationId={application.id} 
+                      readonly={true}
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Account Details Form - only show if application is complete or has form */}
               {(application.is_complete || application.completion_percentage === 100) && (
