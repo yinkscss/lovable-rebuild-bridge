@@ -139,12 +139,19 @@ const AccountDetailsFormManager: React.FC<AccountDetailsFormManagerProps> = ({ a
     });
   };
 
-  const handleSelectChange = (field: keyof AccountDetailsForm) => (value: string) => {
+  const handleSelectChange = (field: keyof AccountDetailsForm) => (value: string | React.ChangeEvent<HTMLSelectElement>) => {
     if (!formData) return;
+    
+    let newValue: string;
+    if (typeof value === 'string') {
+      newValue = value;
+    } else {
+      newValue = value.target.value;
+    }
     
     setFormData({
       ...formData,
-      [field]: value
+      [field]: newValue
     });
   };
 

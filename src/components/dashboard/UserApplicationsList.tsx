@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/auth';
 import { toast } from 'react-hot-toast';
 import { formatCurrency, formatDate } from '../../utils/formatters';
-import { Clock, CheckCircle, XCircle, Eye, Plus, FileText } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, Plus, FileText } from 'lucide-react';
 import Button from '../ui/Button';
 
 interface Application {
