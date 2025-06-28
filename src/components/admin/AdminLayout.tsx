@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { FileText, CreditCard, Users, Settings, LogOut, Menu, X } from 'lucide-react';
+import { FileText, CreditCard, Users, Settings, LogOut, Menu, X, ClipboardList } from 'lucide-react';
 import Logo from '../layout/Logo';
 import { useAuth } from '../../lib/auth';
 import { toast } from 'react-hot-toast';
@@ -40,6 +39,11 @@ const AdminLayout: React.FC = () => {
       path: '/admin/applications', 
       label: 'Applications', 
       icon: <FileText className="h-5 w-5" /> 
+    },
+    { 
+      path: '/admin/account-details', 
+      label: 'Account Details Forms', 
+      icon: <ClipboardList className="h-5 w-5" /> 
     },
     { 
       path: '/admin/payments', 

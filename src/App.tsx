@@ -11,6 +11,7 @@ import BlogPage from './pages/BlogPage';
 import AdminLayout from './components/admin/AdminLayout';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import ApplicationsPage from './pages/admin/ApplicationsPage';
+import AdminAccountDetailsPage from './pages/admin/AdminAccountDetailsPage';
 import PaymentsPage from './pages/admin/PaymentsPage';
 import UserManagementPage from './pages/admin/UserManagementPage';
 import AdminSettingsPage from './pages/admin/AdminSettingsPage';
@@ -102,6 +103,7 @@ function App() {
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboardPage />} />
             <Route path="applications" element={<ApplicationsPage />} />
+            <Route path="account-details" element={<AdminAccountDetailsPage />} />
             <Route path="payments" element={<PaymentsPage />} />
             <Route path="users" element={<UserManagementPage />} />
             <Route path="settings" element={<AdminSettingsPage />} />

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'react-hot-toast';
@@ -39,7 +38,7 @@ const ACCOUNT_TYPES = [
 
 const OPEN_CLOSED_OPTIONS = ['Open', 'Closed'];
 const STATUS_OPTIONS = ['Current', 'Late', 'Charged Off', 'Collection', 'Settled', 'Paid'];
-const PAYMENT_FREQUENCY_OPTIONS = ['Monthly', 'Bi-weekly', 'Weekly', 'Quarterly', 'Yearly', 'One-time'];
+const PAYMENT_FREQUENCY_OPTIONS = ['Monthly', 'Weekly', 'Bi-Weekly', 'Quarterly'];
 
 const AccountDetailsFormManager: React.FC<AccountDetailsFormManagerProps> = ({ applicationId }) => {
   const [formData, setFormData] = useState<AccountDetailsForm | null>(null);
