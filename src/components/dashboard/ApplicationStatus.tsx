@@ -97,8 +97,6 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ applicationId }) 
   const calculateProjectedDate = (createdAt: string, completionPercentage: number) => {
     const created = new Date(createdAt);
     const averageProgramLength = 36; // months
-    const progressRatio = completionPercentage / 100;
-    const monthsCompleted = averageProgramLength * progressRatio;
     
     const projectedDate = new Date(created);
     projectedDate.setMonth(projectedDate.getMonth() + averageProgramLength);
@@ -162,7 +160,7 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ applicationId }) 
         </div>
       </div>
     );
-  }
+  };
 
   if (!application) {
     return (

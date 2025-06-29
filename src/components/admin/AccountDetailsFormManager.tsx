@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'react-hot-toast';
-import { Save, X, Edit, FileText } from 'lucide-react';
+import { Save, X, Edit, FileText, CheckCircle } from 'lucide-react';
 import Input from '../ui/Input';
 import Select from '../ui/Select';
 import Button from '../ui/Button';
@@ -11,13 +12,10 @@ interface AccountDetailsForm {
   application_id: string;
   original_creditor: string;
   account_sold: boolean;
-  current_company?: string;
   account_type: string;
-  date_opened?: string;
   open_closed?: string;
   status?: string;
   current_balance: number;
-  last_payment_date?: string;
   paid_off: boolean;
   payment_frequency?: string;
   payment_amount?: number;
@@ -45,6 +43,7 @@ const AccountDetailsFormManager: React.FC<AccountDetailsFormManagerProps> = ({ a
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [completing, setCompleting] = useState(false);
 
   useEffect(() => {
     fetchAccountDetailsForm();
@@ -81,20 +80,15 @@ const AccountDetailsFormManager: React.FC<AccountDetailsFormManagerProps> = ({ a
       const updateData = {
         original_creditor: formData.original_creditor,
         account_sold: formData.account_sold,
-        current_company: formData.current_company || null,
         account_type: formData.account_type,
-        date_opened: formData.date_opened || null,
         open_closed: formData.open_closed || null,
         status: formData.status || null,
         current_balance: formData.current_balance,
-        last_payment_date: formData.last_payment_date || null,
         paid_off: formData.paid_off,
         payment_frequency: formData.payment_frequency || null,
         payment_amount: formData.payment_amount || null,
         original_balance: formData.original_balance || null,
         term: formData.term || null,
-        completed_at: new Date().toISOString(),
-        filled_by_admin_id: (await supabase.auth.getUser()).data.user?.id,
         updated_at: new Date().toISOString()
       };
 
@@ -113,6 +107,35 @@ const AccountDetailsFormManager: React.FC<AccountDetailsFormManagerProps> = ({ a
       toast.error('Failed to save account details form');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleCompleteForm = async () => {
+    if (!formData) return;
+
+    try {
+      setCompleting(true);
+      
+      const updateData = {
+        completed_at: new Date().toISOString(),
+        filled_by_admin_id: (await supabase.auth.getUser()).data.user?.id,
+        updated_at: new Date().toISOString()
+      };
+
+      const { error } = await supabase
+        .from('account_details_forms')
+        .update(updateData)
+        .eq('id', formData.id);
+
+      if (error) throw error;
+
+      toast.success('Account details form completed successfully');
+      fetchAccountDetailsForm();
+    } catch (error) {
+      console.error('Error completing account details form:', error);
+      toast.error('Failed to complete account details form');
+    } finally {
+      setCompleting(false);
     }
   };
 
@@ -202,10 +225,18 @@ const AccountDetailsFormManager: React.FC<AccountDetailsFormManagerProps> = ({ a
                 </Button>
               </>
             ) : (
-              <Button onClick={() => setEditing(true)} variant="outline" size="sm">
-                <Edit className="h-4 w-4 mr-1" />
-                Edit
-              </Button>
+              <>
+                <Button onClick={() => setEditing(true)} variant="outline" size="sm">
+                  <Edit className="h-4 w-4 mr-1" />
+                  Edit
+                </Button>
+                {!isCompleted && (
+                  <Button onClick={handleCompleteForm} variant="primary" size="sm" disabled={completing}>
+                    <CheckCircle className="h-4 w-4 mr-1" />
+                    {completing ? 'Completing...' : 'Complete Form'}
+                  </Button>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -214,7 +245,7 @@ const AccountDetailsFormManager: React.FC<AccountDetailsFormManagerProps> = ({ a
       <div className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Input
-            label="Original Creditor"
+            label="Creditor"
             value={formData.original_creditor || ''}
             onChange={handleInputChange('original_creditor')}
             disabled={!editing}
@@ -263,22 +294,6 @@ const AccountDetailsFormManager: React.FC<AccountDetailsFormManagerProps> = ({ a
           />
 
           <Input
-            label="Date Opened"
-            type="date"
-            value={formData.date_opened || ''}
-            onChange={handleInputChange('date_opened')}
-            disabled={!editing}
-          />
-
-          <Input
-            label="Last Payment Date"
-            type="date"
-            value={formData.last_payment_date || ''}
-            onChange={handleInputChange('last_payment_date')}
-            disabled={!editing}
-          />
-
-          <Input
             label="Payment Amount"
             type="number"
             step="0.01"
@@ -292,13 +307,6 @@ const AccountDetailsFormManager: React.FC<AccountDetailsFormManagerProps> = ({ a
             options={PAYMENT_FREQUENCY_OPTIONS.map(freq => ({ value: freq, label: freq }))}
             value={formData.payment_frequency || ''}
             onChange={handleSelectChange('payment_frequency')}
-            disabled={!editing}
-          />
-
-          <Input
-            label="Current Company (if sold)"
-            value={formData.current_company || ''}
-            onChange={handleInputChange('current_company')}
             disabled={!editing}
           />
 

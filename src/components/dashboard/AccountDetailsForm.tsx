@@ -2,20 +2,17 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'react-hot-toast';
-import { FileText, Calendar, DollarSign, Building, CreditCard } from 'lucide-react';
+import { FileText, DollarSign, Building, CreditCard } from 'lucide-react';
 
 interface AccountDetailsForm {
   id: string;
   application_id: string;
   original_creditor: string;
   account_sold: boolean;
-  current_company?: string;
   account_type: string;
-  date_opened?: string;
   open_closed?: string;
   status?: string;
   current_balance: number;
-  last_payment_date?: string;
   paid_off: boolean;
   payment_frequency?: string;
   payment_amount?: number;
@@ -104,14 +101,14 @@ const AccountDetailsForm: React.FC<AccountDetailsFormProps> = ({ applicationId }
         <h2 className="text-xl font-bold text-gray-900">Account Details</h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-800 flex items-center">
             <Building className="h-5 w-5 mr-2" />
             Creditor Information
           </h3>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Original Creditor</label>
+            <label className="block text-sm font-medium text-gray-700">Creditor</label>
             <p className="mt-1 text-sm text-gray-900">{formData.original_creditor}</p>
           </div>
           <div>
@@ -126,12 +123,6 @@ const AccountDetailsForm: React.FC<AccountDetailsFormProps> = ({ applicationId }
             <label className="block text-sm font-medium text-gray-700">Account Status</label>
             <p className="mt-1 text-sm text-gray-900">{formData.open_closed || 'N/A'}</p>
           </div>
-          {formData.account_sold && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Current Company</label>
-              <p className="mt-1 text-sm text-gray-900">{formData.current_company || 'N/A'}</p>
-            </div>
-          )}
         </div>
 
         <div className="space-y-4">
@@ -160,42 +151,28 @@ const AccountDetailsForm: React.FC<AccountDetailsFormProps> = ({ applicationId }
             <p className="mt-1 text-sm text-gray-900">{formData.term || 'N/A'}</p>
           </div>
         </div>
-
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-800 flex items-center">
-            <Calendar className="h-5 w-5 mr-2" />
-            Important Dates
-          </h3>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Date Opened</label>
-            <p className="mt-1 text-sm text-gray-900">{formatDate(formData.date_opened)}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Last Payment Date</label>
-            <p className="mt-1 text-sm text-gray-900">{formatDate(formData.last_payment_date)}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Form Completed</label>
-            <p className="mt-1 text-sm text-gray-900">{formatDate(formData.completed_at)}</p>
-          </div>
-        </div>
       </div>
 
       <div className="mt-6 pt-6 border-t border-gray-200">
-        <div className="flex space-x-6">
-          <div className="flex items-center">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              formData.account_sold ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
-            }`}>
-              {formData.account_sold ? 'Account Sold' : 'Original Creditor'}
-            </span>
+        <div className="flex justify-between items-center">
+          <div className="flex space-x-6">
+            <div className="flex items-center">
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                formData.account_sold ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
+              }`}>
+                {formData.account_sold ? 'Account Sold' : 'Original Creditor'}
+              </span>
+            </div>
+            <div className="flex items-center">
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                formData.paid_off ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`}>
+                {formData.paid_off ? 'Paid Off' : 'Outstanding'}
+              </span>
+            </div>
           </div>
-          <div className="flex items-center">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              formData.paid_off ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-            }`}>
-              {formData.paid_off ? 'Paid Off' : 'Outstanding'}
-            </span>
+          <div className="text-sm text-gray-500">
+            Form Completed: {formatDate(formData.completed_at)}
           </div>
         </div>
       </div>
