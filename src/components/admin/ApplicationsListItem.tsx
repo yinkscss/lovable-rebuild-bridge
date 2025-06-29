@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ChevronDown, ChevronUp, CheckCircle, XCircle, Clock, UserCheck, HandCoins, Award } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -133,7 +132,7 @@ const ApplicationsListItem: React.FC<ApplicationsListItemProps> = ({
 
   const canApproveEnrollment = application.status === 'approved' && application.enrollment_status === 'pending';
   const canApproveNegotiations = application.enrollment_status === 'approved' && application.negotiations_status === 'pending';
-  const canCompleteApplication = application.completion_percentage < 100 && 
+  const canCompleteApplication = (application.completion_percentage || 0) < 100 && 
     application.status === 'approved' && 
     application.enrollment_status === 'approved' && 
     application.negotiations_status === 'approved';
@@ -180,20 +179,18 @@ const ApplicationsListItem: React.FC<ApplicationsListItemProps> = ({
               </div>
             )}
             {/* Progress indicator */}
-            {application.completion_percentage !== undefined && (
-              <div className="flex items-center text-xs text-gray-500 mt-1">
-                <div className="w-16 bg-gray-200 rounded-full h-1.5 mr-2">
-                  <div
-                    className="bg-blue-600 h-1.5 rounded-full"
-                    style={{ width: `${application.completion_percentage}%` }}
-                  ></div>
-                </div>
-                <span>{application.completion_percentage}%</span>
-                {application.is_complete && (
-                  <CheckCircle className="h-3 w-3 text-green-500 ml-1" />
-                )}
+            <div className="flex items-center text-xs text-gray-500 mt-1">
+              <div className="w-16 bg-gray-200 rounded-full h-1.5 mr-2">
+                <div
+                  className="bg-blue-600 h-1.5 rounded-full"
+                  style={{ width: `${application.completion_percentage || 0}%` }}
+                ></div>
               </div>
-            )}
+              <span>{application.completion_percentage || 0}%</span>
+              {application.is_complete && (
+                <CheckCircle className="h-3 w-3 text-green-500 ml-1" />
+              )}
+            </div>
           </div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -369,7 +366,7 @@ const ApplicationsListItem: React.FC<ApplicationsListItemProps> = ({
               )}
 
               {/* Account Details Form - only show if application is complete or has form */}
-              {(application.is_complete || application.completion_percentage === 100) && (
+              {(application.is_complete || (application.completion_percentage || 0) === 100) && (
                 <AccountDetailsFormManager applicationId={application.id} />
               )}
 

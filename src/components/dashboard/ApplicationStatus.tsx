@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/auth';
 import { toast } from 'react-hot-toast';
 import { formatCurrency, formatDate } from '../../utils/formatters';
-import { CheckCircle, Clock, XCircle, AlertCircle, FileText, User, DollarSign, Calendar, TrendingUp, Target } from 'lucide-react';
+import { CheckCircle, Clock, XCircle, AlertCircle, FileText, User, DollarSign, TrendingUp, Target } from 'lucide-react';
 import AccountDetailsForm from './AccountDetailsForm';
 
 interface Application {
@@ -100,7 +99,6 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ applicationId }) 
     const averageProgramLength = 36; // months
     const progressRatio = completionPercentage / 100;
     const monthsCompleted = averageProgramLength * progressRatio;
-    const remainingMonths = averageProgramLength - monthsCompleted;
     
     const projectedDate = new Date(created);
     projectedDate.setMonth(projectedDate.getMonth() + averageProgramLength);
