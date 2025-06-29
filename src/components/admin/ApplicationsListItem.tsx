@@ -1,5 +1,8 @@
+
 import React from 'react';
-import { ChevronDown, ChevronUp, CheckCircle, XCircle, Clock, UserCheck, HandCoins } from 'lucide-react';
+import { ChevronDown, ChevronUp, CheckCircle, XCircle, Clock, UserCheck, HandCoins, Award } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import { toast } from 'react-hot-toast';
 import DebtAccountsManager from './DebtAccountsManager';
 import AccountDetailsFormManager from './AccountDetailsFormManager';
 
@@ -104,8 +107,36 @@ const ApplicationsListItem: React.FC<ApplicationsListItemProps> = ({
     }).format(amount);
   };
 
+  const handleCompleteApplication = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('applications')
+        .update({ 
+          completion_percentage: 100,
+          is_complete: true,
+          completed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      toast.success('Application marked as complete successfully');
+      
+      // Refresh the page to show updated data
+      window.location.reload();
+    } catch (error) {
+      console.error('Error completing application:', error);
+      toast.error('Failed to complete application');
+    }
+  };
+
   const canApproveEnrollment = application.status === 'approved' && application.enrollment_status === 'pending';
   const canApproveNegotiations = application.enrollment_status === 'approved' && application.negotiations_status === 'pending';
+  const canCompleteApplication = application.completion_percentage < 100 && 
+    application.status === 'approved' && 
+    application.enrollment_status === 'approved' && 
+    application.negotiations_status === 'approved';
 
   return (
     <>
@@ -214,6 +245,17 @@ const ApplicationsListItem: React.FC<ApplicationsListItemProps> = ({
                   className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-md transition-colors"
                 >
                   Decline
+                </button>
+              </div>
+            )}
+            {canCompleteApplication && (
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleCompleteApplication(application.id)}
+                  className="text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1 rounded-md transition-colors flex items-center"
+                >
+                  <Award className="h-4 w-4 mr-1" />
+                  Mark as Complete
                 </button>
               </div>
             )}

@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/auth';
 import { toast } from 'react-hot-toast';
 import { formatCurrency, formatDate } from '../../utils/formatters';
-import { CheckCircle, Clock, XCircle, AlertCircle, FileText, User, DollarSign, Calendar } from 'lucide-react';
+import { CheckCircle, Clock, XCircle, AlertCircle, FileText, User, DollarSign, Calendar, TrendingUp, Target } from 'lucide-react';
 import AccountDetailsForm from './AccountDetailsForm';
 
 interface Application {
@@ -89,6 +89,25 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ applicationId }) 
     }
   };
 
+  const calculatePotentialSavings = (debtAmount: number) => {
+    // Calculate potential savings (typically 40-60% for debt settlement)
+    const savingsPercentage = 0.5; // 50% average savings
+    return debtAmount * savingsPercentage;
+  };
+
+  const calculateProjectedDate = (createdAt: string, completionPercentage: number) => {
+    const created = new Date(createdAt);
+    const averageProgramLength = 36; // months
+    const progressRatio = completionPercentage / 100;
+    const monthsCompleted = averageProgramLength * progressRatio;
+    const remainingMonths = averageProgramLength - monthsCompleted;
+    
+    const projectedDate = new Date(created);
+    projectedDate.setMonth(projectedDate.getMonth() + averageProgramLength);
+    
+    return projectedDate;
+  };
+
   const getProgressSteps = () => {
     if (!application) return [];
 
@@ -157,6 +176,8 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ applicationId }) 
   }
 
   const progressSteps = getProgressSteps();
+  const potentialSavings = calculatePotentialSavings(application.debt_amount);
+  const projectedDate = calculateProjectedDate(application.created_at, application.completion_percentage);
 
   return (
     <div className="space-y-6">
@@ -288,32 +309,34 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ applicationId }) 
                 </div>
               </div>
 
-              {/* Quick Stats */}
+              {/* Quick Stats - Updated to match the image */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex items-center">
-                    <DollarSign className="h-5 w-5 text-gray-400 mr-2" />
-                    <span className="text-sm font-medium text-gray-700">Debt Amount</span>
+                <div className="bg-blue-600 rounded-lg p-6 text-white">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-blue-100 text-sm font-medium">Total Debt</p>
+                      <p className="text-2xl font-bold">{formatCurrency(application.debt_amount)}</p>
+                    </div>
+                    <DollarSign className="h-8 w-8 text-blue-200" />
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(application.debt_amount)}</p>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex items-center">
-                    <Calendar className="h-5 w-5 text-gray-400 mr-2" />
-                    <span className="text-sm font-medium text-gray-700">Monthly Income</span>
+                <div className="bg-green-600 rounded-lg p-6 text-white">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-green-100 text-sm font-medium">Potential Savings</p>
+                      <p className="text-2xl font-bold">{formatCurrency(potentialSavings)}</p>
+                    </div>
+                    <TrendingUp className="h-8 w-8 text-green-200" />
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {application.monthly_income ? formatCurrency(application.monthly_income) : 'N/A'}
-                  </p>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex items-center">
-                    <User className="h-5 w-5 text-gray-400 mr-2" />
-                    <span className="text-sm font-medium text-gray-700">Employment</span>
+                <div className="bg-purple-600 rounded-lg p-6 text-white">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-purple-100 text-sm font-medium">Projected Completion</p>
+                      <p className="text-2xl font-bold">{projectedDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</p>
+                    </div>
+                    <Target className="h-8 w-8 text-purple-200" />
                   </div>
-                  <p className="text-2xl font-bold text-gray-900 capitalize">
-                    {application.employment_status || 'N/A'}
-                  </p>
                 </div>
               </div>
             </div>
