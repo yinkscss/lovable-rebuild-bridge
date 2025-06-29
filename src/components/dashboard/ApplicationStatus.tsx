@@ -94,7 +94,7 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ applicationId }) 
     return debtAmount * savingsPercentage;
   };
 
-  const calculateProjectedDate = (createdAt: string, completionPercentage: number) => {
+  const calculateProjectedDate = (createdAt: string) => {
     const created = new Date(createdAt);
     const averageProgramLength = 36; // months
     
@@ -173,7 +173,7 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ applicationId }) 
 
   const progressSteps = getProgressSteps();
   const potentialSavings = calculatePotentialSavings(application.debt_amount);
-  const projectedDate = calculateProjectedDate(application.created_at, application.completion_percentage);
+  const projectedDate = calculateProjectedDate(application.created_at);
 
   return (
     <div className="space-y-6">
