@@ -45,7 +45,7 @@ const FinancialSummary: React.FC = () => {
 
   const calculateTotals = () => {
     const totalDebt = applications.reduce((sum, app) => sum + (app.debt_amount || 0), 0);
-    const savingsPercentage = 0.5; // 50% average savings
+    const savingsPercentage = 0.4; // 40% average savings
     const totalPotentialSavings = totalDebt * savingsPercentage;
     
     return {
@@ -102,7 +102,7 @@ const FinancialSummary: React.FC = () => {
             <div>
               <p className="text-green-100 text-sm font-medium">Potential Savings</p>
               <p className="text-2xl font-bold">{formatCurrency(totalPotentialSavings)}</p>
-              <p className="text-green-100 text-xs mt-1">Est. 50% average</p>
+              <p className="text-green-100 text-xs mt-1">Est. 40% average</p>
             </div>
             <TrendingUp className="h-8 w-8 text-green-200" />
           </div>
