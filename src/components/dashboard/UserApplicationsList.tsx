@@ -4,12 +4,12 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../lib/auth';
 import { toast } from 'react-hot-toast';
 import { formatCurrency, formatDate } from '../../utils/formatters';
-import { Clock, CheckCircle, XCircle, Plus, FileText } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, Plus, FileText, Ban } from 'lucide-react';
 import Button from '../ui/Button';
 
 interface Application {
   id: string;
-  status: 'pending' | 'approved' | 'declined';
+  status: 'pending' | 'approved' | 'declined' | 'cancelled';
   first_name: string;
   last_name: string;
   email: string;
@@ -75,6 +75,8 @@ const UserApplicationsList: React.FC<UserApplicationsListProps> = ({
         return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'declined':
         return <XCircle className="h-4 w-4 text-red-500" />;
+      case 'cancelled':
+        return <Ban className="h-4 w-4 text-gray-500" />;
       default:
         return <Clock className="h-4 w-4 text-yellow-500" />;
     }
@@ -87,6 +89,8 @@ const UserApplicationsList: React.FC<UserApplicationsListProps> = ({
         return `${baseClasses} bg-green-100 text-green-800`;
       case 'declined':
         return `${baseClasses} bg-red-100 text-red-800`;
+      case 'cancelled':
+        return `${baseClasses} bg-gray-100 text-gray-800`;
       default:
         return `${baseClasses} bg-yellow-100 text-yellow-800`;
     }
@@ -95,6 +99,39 @@ const UserApplicationsList: React.FC<UserApplicationsListProps> = ({
   const createNewApplication = () => {
     // Navigate to apply page
     window.location.href = '/apply';
+  };
+
+  const handleCancelApplication = async (applicationId: string) => {
+    if (!window.confirm('Are you sure you want to cancel this application? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('applications')
+        .update({ 
+          status: 'cancelled',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', applicationId);
+
+      if (error) throw error;
+
+      // Update local state
+      setApplications(applications.map(app => 
+        app.id === applicationId 
+          ? { ...app, status: 'cancelled' as const, updated_at: new Date().toISOString() }
+          : app
+      ));
+
+      toast.success('Application cancelled successfully');
+      
+      // Trigger a refresh of the parent component if needed
+      fetchApplications();
+    } catch (error) {
+      console.error('Error cancelling application:', error);
+      toast.error('Failed to cancel application');
+    }
   };
 
   if (loading) {
@@ -208,6 +245,22 @@ const UserApplicationsList: React.FC<UserApplicationsListProps> = ({
                 <div className="mt-2 flex items-center text-sm text-green-600">
                   <CheckCircle className="h-4 w-4 mr-1" />
                   Application Complete
+                </div>
+              )}
+
+              {/* Cancel button for pending applications */}
+              {app.status === 'pending' && (
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <button
+                    onClick={(e: React.MouseEvent) => {
+                      e.stopPropagation();
+                      handleCancelApplication(app.id);
+                    }}
+                    className="inline-flex items-center px-3 py-1.5 text-sm border border-red-300 rounded-md text-red-600 bg-white hover:bg-red-50 hover:border-red-400 transition-colors"
+                  >
+                    <Ban className="h-4 w-4 mr-1" />
+                    Cancel Application
+                  </button>
                 </div>
               )}
             </div>

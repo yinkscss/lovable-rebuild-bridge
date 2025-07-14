@@ -57,7 +57,7 @@ export interface DebtAccount {
 
 export interface ApplicationStatus {
   id: string;
-  status: 'pending' | 'approved' | 'declined';
+  status: 'pending' | 'approved' | 'declined' | 'cancelled';
   applicationData: ApplicationFormData;
   createdAt: string;
   updatedAt: string;
@@ -66,7 +66,7 @@ export interface ApplicationStatus {
 export interface Application {
   id: string;
   user_id: string;
-  status: 'pending' | 'approved' | 'declined';
+  status: 'pending' | 'approved' | 'declined' | 'cancelled';
   first_name: string;
   last_name: string;
   email: string;
@@ -83,6 +83,7 @@ export interface Application {
   enrollment_approved_at?: string;
   negotiations_status?: 'pending' | 'approved' | 'declined';
   negotiations_approved_at?: string;
+  approval_email_sent?: boolean;
   created_at: string;
   updated_at: string;
   debt_accounts?: DebtAccount[];

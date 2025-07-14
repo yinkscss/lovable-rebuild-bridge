@@ -5,8 +5,8 @@ import { Search } from 'lucide-react';
 interface ApplicationsFilterBarProps {
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
-  filterStatus: 'all' | 'pending' | 'approved' | 'declined';
-  setFilterStatus: React.Dispatch<React.SetStateAction<'all' | 'pending' | 'approved' | 'declined'>>;
+  filterStatus: 'all' | 'pending' | 'approved' | 'declined' | 'cancelled';
+  setFilterStatus: React.Dispatch<React.SetStateAction<'all' | 'pending' | 'approved' | 'declined' | 'cancelled'>>;
 }
 
 const ApplicationsFilterBar: React.FC<ApplicationsFilterBarProps> = ({
@@ -55,6 +55,12 @@ const ApplicationsFilterBar: React.FC<ApplicationsFilterBarProps> = ({
           onClick={() => setFilterStatus('declined')}
         >
           Declined
+        </button>
+        <button 
+          className={`px-4 py-1 rounded-md ${filterStatus === 'cancelled' ? 'bg-gray-100 text-gray-700' : 'bg-gray-100'}`}
+          onClick={() => setFilterStatus('cancelled')}
+        >
+          Cancelled
         </button>
       </div>
     </div>

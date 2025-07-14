@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, ChevronUp, CheckCircle, XCircle, Clock, UserCheck, HandCoins, Award } from 'lucide-react';
+import { ChevronDown, ChevronUp, CheckCircle, XCircle, Clock, UserCheck, HandCoins, Award, Ban } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { toast } from 'react-hot-toast';
 import DebtAccountsManager from './DebtAccountsManager';
@@ -27,7 +27,7 @@ interface DebtAccount {
 
 interface Application {
   id: string;
-  status: 'pending' | 'approved' | 'declined';
+  status: 'pending' | 'approved' | 'declined' | 'cancelled';
   first_name: string;
   last_name: string;
   email: string;
@@ -46,6 +46,7 @@ interface Application {
   enrollment_approved_at?: string;
   negotiations_status?: 'pending' | 'approved' | 'declined';
   negotiations_approved_at?: string;
+  approval_email_sent?: boolean;
   created_at: string;
   updated_at: string;
   debt_accounts?: DebtAccount[];
@@ -82,6 +83,8 @@ const ApplicationsListItem: React.FC<ApplicationsListItemProps> = ({
         return <CheckCircle className="h-5 w-5 text-green-500" />;
       case 'declined':
         return <XCircle className="h-5 w-5 text-red-500" />;
+      case 'cancelled':
+        return <Ban className="h-5 w-5 text-gray-500" />;
       default:
         return <Clock className="h-5 w-5 text-yellow-500" />;
     }
@@ -94,6 +97,8 @@ const ApplicationsListItem: React.FC<ApplicationsListItemProps> = ({
         return `${baseClasses} bg-green-100 text-green-800`;
       case 'declined':
         return `${baseClasses} bg-red-100 text-red-800`;
+      case 'cancelled':
+        return `${baseClasses} bg-gray-100 text-gray-800`;
       default:
         return `${baseClasses} bg-yellow-100 text-yellow-800`;
     }

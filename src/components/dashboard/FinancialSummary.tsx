@@ -44,14 +44,19 @@ const FinancialSummary: React.FC = () => {
   };
 
   const calculateTotals = () => {
-    const totalDebt = applications.reduce((sum, app) => sum + (app.debt_amount || 0), 0);
+    // Only include applications that are not declined or cancelled
+    const activeApplications = applications.filter(app => 
+      app.status !== 'declined' && app.status !== 'cancelled'
+    );
+    
+    const totalDebt = activeApplications.reduce((sum, app) => sum + (app.debt_amount || 0), 0);
     const savingsPercentage = 0.4; // 40% average savings
     const totalPotentialSavings = totalDebt * savingsPercentage;
     
     return {
       totalDebt,
       totalPotentialSavings,
-      applicationCount: applications.length
+      applicationCount: activeApplications.length
     };
   };
 
@@ -124,6 +129,7 @@ const FinancialSummary: React.FC = () => {
         <p className="text-sm text-gray-600">
           <strong>Note:</strong> Potential savings are estimates based on typical debt settlement outcomes. 
           Actual results may vary based on individual circumstances and creditor negotiations.
+          Only active applications (pending/approved) are included in calculations.
         </p>
       </div>
     </div>

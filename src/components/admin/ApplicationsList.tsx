@@ -27,7 +27,7 @@ interface DebtAccount {
 
 interface Application {
   id: string;
-  status: 'pending' | 'approved' | 'declined';
+  status: 'pending' | 'approved' | 'declined' | 'cancelled';
   first_name: string;
   last_name: string;
   email: string;
@@ -45,6 +45,7 @@ interface Application {
   enrollment_approved_at?: string;
   negotiations_status?: 'pending' | 'approved' | 'declined';
   negotiations_approved_at?: string;
+  approval_email_sent?: boolean;
   created_at: string;
   updated_at: string;
   debt_accounts?: DebtAccount[];
@@ -55,7 +56,7 @@ const ApplicationsList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'approved' | 'declined'>('all');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'approved' | 'declined' | 'cancelled'>('all');
 
   // Load applications
   useEffect(() => {
@@ -141,7 +142,38 @@ const ApplicationsList: React.FC = () => {
           : app
       ));
       
-      toast.success('Application approved successfully');
+      // Send approval email
+      try {
+        const application = applications.find(app => app.id === id);
+        if (application && !application.approval_email_sent) {
+          const { error: emailError } = await supabase.functions.invoke('send-approval-email', {
+            body: {
+              email: application.email,
+              firstName: application.first_name,
+              lastName: application.last_name,
+              applicationId: application.id
+            }
+          });
+
+          if (emailError) {
+            console.error('Error sending approval email:', emailError);
+            toast.error('Application approved but failed to send email notification');
+          } else {
+            // Mark email as sent
+            await supabase
+              .from('applications')
+              .update({ approval_email_sent: true })
+              .eq('id', id);
+            
+            toast.success('Application approved and confirmation email sent');
+          }
+        } else {
+          toast.success('Application approved successfully');
+        }
+      } catch (emailError) {
+        console.error('Error sending approval email:', emailError);
+        toast.success('Application approved but email notification failed');
+      }
     } catch (error) {
       console.error('Error approving application:', error);
       toast.error('Failed to approve application');
