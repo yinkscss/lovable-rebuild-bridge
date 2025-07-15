@@ -89,8 +89,8 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({ applicationId }) 
   };
 
   const calculatePotentialSavings = (debtAmount: number) => {
-    // Calculate potential savings (typically 40-60% for debt settlement)
-    const savingsPercentage = 0.5; // 50% average savings
+    // Calculate potential savings (typically 40% for debt settlement)
+    const savingsPercentage = 0.4; // 40% average savings
     return debtAmount * savingsPercentage;
   };
 
