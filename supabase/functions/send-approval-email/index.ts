@@ -195,7 +195,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending approval email to: ${email} for application: ${applicationId}`);
 
     const emailResponse = await resend.emails.send({
-      from: "National Debt Relief <noreply@nationaldebtrelief.com>",
+      from: "National Debt Relief <info@nationaldebtsrelief.org>",
       to: [email],
       subject: `🎉 Congratulations ${firstName}! Your Debt Relief Application is Approved`,
       html: createApprovalEmailHTML(firstName),
