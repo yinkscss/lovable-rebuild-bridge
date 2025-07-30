@@ -129,6 +129,36 @@ const AccountDetailsFormManager: React.FC<AccountDetailsFormManagerProps> = ({ a
 
       if (error) throw error;
 
+      // Get application details for email
+      const { data: applicationData, error: appError } = await supabase
+        .from('applications')
+        .select('email, first_name, last_name')
+        .eq('id', applicationId)
+        .single();
+
+      if (!appError && applicationData) {
+        // Send debt account creation email
+        try {
+          await supabase.functions.invoke('send-debt-account-email', {
+            body: {
+              email: applicationData.email,
+              firstName: applicationData.first_name,
+              lastName: applicationData.last_name,
+              applicationId: applicationId,
+              debtAccountDetails: {
+                originalCreditor: formData.original_creditor,
+                accountType: formData.account_type,
+                currentBalance: formData.current_balance
+              }
+            }
+          });
+          console.log('Debt account creation email sent successfully');
+        } catch (emailError) {
+          console.error('Error sending debt account creation email:', emailError);
+          // Don't show error to user as the main action succeeded
+        }
+      }
+
       toast.success('Account details form completed successfully');
       fetchAccountDetailsForm();
     } catch (error) {
